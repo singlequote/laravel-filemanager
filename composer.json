@@ -1,0 +1,56 @@
+{
+    "name": "singlequote/laravel-filemanager",
+    "description": "A simple filemanager",
+    "keywords": [
+        "Filesystem",
+        "Files",
+        "File manager",
+        "Manager"
+    ],
+    "homepage": "https://github.com/singlequote/laravel-filemanager",
+    "license": "MIT",
+    "version": "0.0.1",
+    "authors": [
+        {
+            "name": "Wim Pruiksma",
+            "email": "wim@acfbentveld.nl",
+            "homepage": "https://acfbentveld.nl/",
+            "role": "Lead developer"
+        }
+    ],
+    "require": {
+        "php": "^7.0",
+        "laravel/framework": "5.*"
+    },
+    "require-dev": {
+        
+    },
+    "autoload": {
+        "psr-4": {
+            "SingleQuote\\FileManager\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SingleQuote\\FileManager\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "SingleQuote\\FileManager\\FileManagerServiceProvider"
+            ],
+            "aliases": {
+                "FileManager": "SingleQuote\\FileManager\\FileManagerFacade"
+            }
+        }
+    }
+}
