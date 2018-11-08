@@ -1,4 +1,4 @@
 # Changelog
 
-All notable changes to `DataTables` will be documented in this file
+All notable changes to `Laravel Filemanager` will be documented in this file
 
