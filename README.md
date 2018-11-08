@@ -9,8 +9,11 @@ This package contains a light weight filemanager. It is build for easy intergrat
 
 You can install the package via composer:
 
-```bash
+```php
 composer require singlequote/laravel-filemanager
+
+php artisan vendor:publish --tag=public --force
+php artisan vendor:publish --tag=config
 ```
 
 ### Why use this? 
@@ -20,6 +23,7 @@ Well let me tell you. This package has its own media viewer. This means you can 
 Every new version release we create a new todo list. And yes you can help with that! Create a merge request with fixes, feutures and whatever you code.
 #### Version 1.0.0 - Release
 [ ] Creating docs
+[ ] Creating tests
 [ ] Intergrating permissions 
 [ ] Stand alone button for image picker
 [ ] Ability to crop images
