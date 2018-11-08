@@ -22,11 +22,11 @@ Well let me tell you. This package has its own media viewer. This means you can 
 ## Todo list
 Every new version release we create a new todo list. And yes you can help with that! Create a merge request with fixes, feutures and whatever you code.
 #### Version 1.0.0 - Release
-[ ] Creating docs
-[ ] Creating tests
-[ ] Intergrating permissions 
-[ ] Stand alone button for image picker
-[ ] Ability to crop images
+- [ ] Creating docs
+- [ ] Creating tests
+- [ ] Intergrating permissions 
+- [ ] Stand alone button for image picker
+- [ ] Ability to crop images
 
 ## Usage
 
