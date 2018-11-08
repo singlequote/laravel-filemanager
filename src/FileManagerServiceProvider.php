@@ -22,14 +22,11 @@ class FileManagerServiceProvider extends ServiceProvider
             __DIR__.'/../config/laravel-filemanager.php' => config_path('laravel-filemanager.php')
         ], 'config');
 
-        //publish the views
-        $this->publishes([
-            __DIR__.'/resources/views' => resource_path('views/vendor/laravel-filemanager'),
-        ]);
-
+        //publish the views and styling
         $this->publishes([
             __DIR__.'/resources/css' => public_path('vendor/laravel-filemanager/css'),
             __DIR__.'/resources/js' => public_path('vendor/laravel-filemanager/js'),
+            __DIR__.'/resources/views' => resource_path('views/vendor/laravel-filemanager'),
         ], 'public');
     }
 
