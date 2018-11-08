@@ -19,6 +19,10 @@ php artisan vendor:publish --tag=config
 ### Why use this? 
 Well let me tell you. This package has its own media viewer. This means you can open files in every view wherever you want. Also the media viewer optimizes your images to fit every weird structure you make. And yes the filemanager makes it easy as well! Manage your private files or share it with other users!
 
+![Demo 2](https://raw.githubusercontent.com/singlequote/laravel-filemanager/master/demo/demo2.png "Demo 2")
+![Demo 1](https://raw.githubusercontent.com/singlequote/laravel-filemanager/master/demo/demo1.png "Demo 1")
+![Demo 3](https://raw.githubusercontent.com/singlequote/laravel-filemanager/master/demo/demo3.png "Demo 3")
+
 ## Todo list
 Every new version release we create a new todo list. And yes you can help with that! Create a merge request with fixes, feutures and whatever you code.
 #### Version 1.0.0 - Release
