@@ -166,7 +166,7 @@ class FileManager
     {
         if(typeof this.callback === 'function'){
             $(this.doms.modalPreview).modal('hide');
-            return this.callback(this.media+'/'+element.data('route'));
+            return this.callback(element.data('route'));
         }
         this.addition = `?file=${element.data('route')}`;
         $(this.doms.modalPreview).find('.modal-body').html(`<div class="loader"></div>`);
