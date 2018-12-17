@@ -141,6 +141,10 @@ class FileManager
      */
     triggeredFile(element)
     {
+        console.log(this.callback);
+        if(this.callback){
+            this.callback(element.data('route'));
+        }
         this.addition = `?file=${element.data('route')}`;
         $(this.doms.modalPreview).find('.modal-body').html(`<div class="loader"></div>`);
         $(this.doms.modalPreview).find('.modal-body').html(`

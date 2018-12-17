@@ -74,7 +74,7 @@ class MediaController extends Controller
             })->encode(null, $quality);
             return $image->response();
         });
-        return $image;
+        return $image;      
     }
 
     /**

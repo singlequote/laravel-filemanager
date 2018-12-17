@@ -2,7 +2,7 @@
 Route::group(['prefix' => config('laravel-filemanager.prefix'), 'middleware' => config('laravel-filemanager.middleware')],function () {
 
 
-    Route::get('/'              , '\SingleQuote\FileManager\Controllers\FileManager@index')->name(config('laravel-filemanager.prefix'));
+    Route::get('/'              , '\SingleQuote\FileManager\Controllers\FileManager@index');
 
     Route::get('/get/sidebar'   , '\SingleQuote\FileManager\Controllers\FileManager@getSidebar');
     Route::get('/get/content'   , '\SingleQuote\FileManager\Controllers\FileManager@getContent');
