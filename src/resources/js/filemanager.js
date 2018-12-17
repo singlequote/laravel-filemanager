@@ -10,32 +10,55 @@ class FileManager
      */
     constructor()
     {
-        this.doms       = {
+        this.doms           = {
             sidebar         : '#filemanager-sidebar',
             content         : '#filemanager-content',
             folder          : '.folder',
             file            : '.file',
             modalPreview    : '#filemanager-media-preview'
         };
-        this.url        = location.href.replace('#', '');
-        this.addition   = '';
-        this._token     = null;
-        this.routes     = {
-            active      : null,
-            load        : {
-                sidebar : '/get/sidebar/',
-                content : '/get/content/'
+        this.url            = location.href.replace('#', '');
+        this.media          = location.href.replace('#', '');
+        this.addition       = '';
+        this._token         = null;
+        this.callback       = null;
+        this.routes         = {
+            active          : null,
+            load            : {
+                sidebar     : '/get/sidebar/',
+                content     : '/get/content/'
             },
-            actions     : {
-                edit    : '/action/edit',
-                delete  : '/action/delete',
-                upload  : '/action/upload',
-                new     : '/action/new'
+            actions         : {
+                edit        : '/action/edit',
+                delete      : '/action/delete',
+                upload      : '/action/upload',
+                new         : '/action/new'
             }
         };
-        this.actions    = ['edit', 'delete', 'crop'];
-        this.loadSidebar();
+        this.actions        = ['edit', 'delete', 'crop'];
         this.loadTriggers();
+    }
+    
+    /**
+     * Open the filemanager within a modal
+     * 
+     * @param {type} callback
+     * @returns {undefined}
+     */
+    modal(callback = null)
+    {
+        $(this.doms.modalPreview).modal('show');
+        $(this.doms.modalPreview).find('.modal-dialog').css("max-width", "80%").find('.modal-body').html(`
+            <div class='row' id="filemanager">
+                <div class='col-3' id='${this.doms.sidebar.replace('#','').replace('.','')}'>
+                </div>
+                <div class='col' id='${this.doms.content.replace('#','').replace('.','')}'>
+                </div>
+            </div>
+        `);
+        this.loadSidebar();
+        this.loadContent();
+        this.callback = callback;        
     }
 
     /**
@@ -141,9 +164,9 @@ class FileManager
      */
     triggeredFile(element)
     {
-        console.log(this.callback);
-        if(this.callback){
-            this.callback(element.data('route'));
+        if(typeof this.callback === 'function'){
+            $(this.doms.modalPreview).modal('hide');
+            return this.callback(element.data('route'));
         }
         this.addition = `?file=${element.data('route')}`;
         $(this.doms.modalPreview).find('.modal-body').html(`<div class="loader"></div>`);
@@ -227,6 +250,16 @@ class FileManager
     set baseUrl(url)
     {
         this.url = url;
+    }
+
+    /**
+     * Set the media url
+     * 
+     * @param {string} url 
+     */
+    set mediaUrl(url)
+    {
+        this.media = url;
     }
 
     /**
