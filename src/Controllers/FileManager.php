@@ -103,8 +103,8 @@ class FileManager extends Controller
     {
         $view = $request->get('view', 'thumb');
         $directory = config('laravel-filemanager.encrypted') ? decrypt($request->folder) : $request->folder;
-        $root = $this->isRoot($directory);
-        $previous = $this->getPrevious($directory);
+        $root = $this->isRoot($directory ? $directory : '');
+        $previous = $this->getPrevious($directory ? $directory : '');
         $disk = config('laravel-filemanager.disk');
         $files = $this->createContentItems(Storage::disk($disk)->files($directory), $directory);
         $folders = $this->createContentItems(Storage::disk($disk)->directories($directory), $directory);

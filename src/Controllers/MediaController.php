@@ -5,6 +5,7 @@ namespace SingleQuote\FileManager\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
+use Cache;
 use Image;
 
 class MediaController extends Controller
@@ -60,12 +61,20 @@ class MediaController extends Controller
     private function returnImage($path)
     {
         ini_set('memory_limit','256M');
-        $image = Image::make($path);
-        $width = $this->request->get('w', $image->width());
-        $height = $this->request->get('h', $image->height());
-        $quality = $this->request->get('q', 100);
-        $image->fit($width, $height)->encode(null, $quality);
-        return $image->response();
+        $request = $this->request;
+        $cacheName = $path.$request->get('w','').$request->get('h','').$request->get('q','');
+        $image = Cache::remember($cacheName, 40320, function () use($request, $path) {
+            $image = Image::make($path)->orientate();
+            $width = $request->get('w', $image->width());
+            $height = $request->get('h', $image->height());
+            $quality = $request->get('q', 50);
+            $image->fit($width, $height, function($constraint){
+                $constraint->upsize();
+                $constraint->aspectRatio();
+            })->encode(null, $quality);
+            return $image->response();
+        });
+        return $image;
     }
 
     /**

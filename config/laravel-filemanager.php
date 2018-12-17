@@ -43,6 +43,15 @@ return [
         'shared_prefix'     => 'shares',
     ],
 
+
+    /**
+     * Enable cache for images and files
+     */
+    'cache' => [
+        'enabled' => true,
+        'keepAlive' => 40320 //in seconds
+    ],
+
     /**
      * Media config
      */

@@ -1,7 +1,7 @@
 # Laravel filemanager
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/singlequote/laravel-filemanager.svg?style=flat-square)](https://packagist.org/packages/singlequote/laravel-filemanager)
-[![Total Downloads](https://img.shields.io/packagist/dt/singlequote/laravel-filemanager.svg?style=flat-square)](https://packagist.org/packages/singlequote/laravel-filemanager)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/singlequote/laravel-filemanager.svg?style=flat-square)](https://packagist.org/packages/acfbentveld/laravel-datatables)
+[![Total Downloads](https://img.shields.io/packagist/dt/singlequote/laravel-filemanager.svg?style=flat-square)](https://packagist.org/packages/acfbentveld/laravel-datatables)
 
 This package contains a light weight filemanager. It is build for easy intergration and easy to customize. It works only with laravel and uses a lot of laravels code. The code is clean and we want to keep it this way. offcourse this package will grow into an awesome filemanager where you can manage your files the way you want.
 
@@ -18,10 +18,6 @@ php artisan vendor:publish --tag=config
 
 ### Why use this? 
 Well let me tell you. This package has its own media viewer. This means you can open files in every view wherever you want. Also the media viewer optimizes your images to fit every weird structure you make. And yes the filemanager makes it easy as well! Manage your private files or share it with other users!
-
-![Demo 2](https://raw.githubusercontent.com/singlequote/laravel-filemanager/master/demo/demo2.png "Demo 2")
-![Demo 1](https://raw.githubusercontent.com/singlequote/laravel-filemanager/master/demo/demo1.png "Demo 1")
-![Demo 3](https://raw.githubusercontent.com/singlequote/laravel-filemanager/master/demo/demo3.png "Demo 3")
 
 ## Todo list
 Every new version release we create a new todo list. And yes you can help with that! Create a merge request with fixes, feutures and whatever you code.
