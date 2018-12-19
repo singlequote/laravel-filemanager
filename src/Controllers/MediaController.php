@@ -63,13 +63,14 @@ class MediaController extends Controller
         ini_set('memory_limit','256M');
         $request = $this->request;
         $cacheName = $path.$request->get('w','').$request->get('h','').$request->get('q','');
-        $keepAlive = config('laravel-filemanager.cache.enabled') ? config('laravel-filemanager.cache.keepAlive') : 0;
+//        \Cache::forget($cacheName);
+        $keepAlive = config('laravel-filemanager.cache.enabled') ? config('laravel-filemanager.cache.keepAlive', 40000) : 0;
         $image = Cache::remember($cacheName, $keepAlive, function () use($request, $path) {
             $image = Image::make($path)->orientate();
             $width = $request->get('w', $image->width());
             $height = $request->get('h', $image->height());
             $quality = $request->get('q', 50);
-            $image->fit($width, $height, function($constraint){
+            $image->{config('laravel-filemanager.media.driver','fit')}($width, $height, function($constraint){
                 $constraint->upsize();
                 $constraint->aspectRatio();
             })->encode(null, $quality);
