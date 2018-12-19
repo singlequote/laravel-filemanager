@@ -56,7 +56,13 @@ return [
      * Media config
      */
     'media' => [
-
+    
+        /**
+         * The driver for resizing the file
+         * Supported drivers are fit and resize
+         */
+        'driver' => 'fit',
+        
         /**
          * Set to false if you dont want to use the media
          */
