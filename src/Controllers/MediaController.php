@@ -11,6 +11,8 @@ use Image;
 class MediaController extends Controller
 {
 
+    protected $driver = 'fit';
+
     /**
      * Return file if it exists. Return default image if not
      *
@@ -63,14 +65,15 @@ class MediaController extends Controller
         ini_set('memory_limit','256M');
         $request = $this->request;
         $cacheName = $path.$request->get('w','').$request->get('h','').$request->get('q','');
-//        \Cache::forget($cacheName);
+        \Cache::forget($cacheName);
         $keepAlive = config('laravel-filemanager.cache.enabled') ? config('laravel-filemanager.cache.keepAlive', 40000) : 0;
         $image = Cache::remember($cacheName, $keepAlive, function () use($request, $path) {
-            $image = Image::make($path)->orientate();
-            $width = $request->get('w', $image->width());
-            $height = $request->get('h', $image->height());
-            $quality = $request->get('q', 50);
-            $image->{config('laravel-filemanager.media.driver','fit')}($width, $height, function($constraint){
+            $image      = Image::make($path)->orientate();
+            $width      = $request->get('w', $image->width());
+            $height     = $request->get('h', $image->height());
+            $quality    = $request->get('q', 50);
+            $driver     = $request->get('d', config('laravel-filemanager.media.driver',$this->driver));
+            $image->{$driver}($width, $height, function($constraint){
                 $constraint->upsize();
                 $constraint->aspectRatio();
             })->encode(null, $quality);
