@@ -37,14 +37,24 @@ Accepting paramaters :
 * Height (h = 100)
 * Width (w = 100)
 * Quality (q = 100) in %
+* Driver (d = fit|resize) see the media driver options
 
 ```php
     // The path to your file is the path starting from your filemanagers root 
     
     <img src='{{route('media',  'path/to/image.png')}}'> //This uses the original size and quality of the image
     
-    <img src='{{route('media',  'path/to/image.png')}}?h=100&w=100&q=50'> //this creates a nice thumb image 100x100 with 50% of the quality. This is good for performance on big files
+    <img src='{{route('media',  'path/to/image.png')}}?h=100&w=100&q=50&d=resize'> //this creates a nice thumb image 100x100 with 50% of the quality. This is good for performance on big files
 ```
+
+### Media driver
+The media driver supports two types of image resizing. `fit` and `resize`
+
+#### Fit
+Combine cropping and resizing to format image in a smart way. The method will find the best fitting aspect ratio of your given width and height on the current image automatically, cut it out and resize it to the given dimension. You may pass an optional Closure callback as third parameter, to prevent possible upsizing and a custom position of the cutout as fourth parameter.
+
+#### Resize
+Resizes current image based on given width and/or height. To constraint the resize command, pass an optional Closure callback as third parameter.
 
 ### Filemanager
 Lets keep it all simple. For this package you need a view and some require html. When you publish the resources, you get a demo page with all the basics.
