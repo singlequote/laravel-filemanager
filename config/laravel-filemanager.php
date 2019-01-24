@@ -23,7 +23,15 @@ return [
      * The filesystems driver
      * Create new drivers here (config/filesystems.php)
      */
-    'disk' => 'filemanager',
+    'disk' => 'local',
+
+    /**
+     * Enable cache for images and files
+     */
+    'cache' => [
+        'enabled' => true,
+        'keepAlive' => 3600 //in seconds
+    ],
 
     /**
      * Users settings
@@ -40,22 +48,19 @@ return [
          * Set to true if users are able to share files
          */
         'shared_folder'     => true,
-        'shared_prefix'     => 'shares',
-    ],
-
-
-    /**
-     * Enable cache for images and files
-     */
-    'cache' => [
-        'enabled' => true,
-        'keepAlive' => 40320 //in seconds
+        'shared_prefix'     => '',
     ],
 
     /**
      * Media config
      */
     'media' => [
+
+        /**
+         * The driver for resizing the file
+         * Supported drivers are fit and resize
+         */
+        'driver' => 'resize',
 
         /**
          * Set to false if you dont want to use the media
@@ -72,20 +77,8 @@ return [
          * This is also your route name
          * For example route('media', 'myfolder/my-awesome-file.png') for showing an image
          */
-        'prefix' => 'media',
+        'prefix' => 'media'
 
-        /**
-         * Allowed mimetypes
-         */
-        'image-mimetypes' => [
-            'image/jpeg',
-            'image/png',
-            'image/gif',
-            'image/tiff',
-            'image/bmp'
-        ]
-
-        
     ]
 
 ];
