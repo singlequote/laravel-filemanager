@@ -54,7 +54,7 @@ return [
          */
         'create_hyperlink' => false,
         //The path starting inside the public folder
-        'hyperlink' => 'cached',
+        'hyperlink_path' => 'cached',
         /**
          * Set to false if you dont want to use the media
          */
