@@ -11,10 +11,5 @@ let mix = require('laravel-mix');
  |
  */
 
-mix.sass('public/vendor/laravel-filemanager/css/filemanager.scss', 'public/vendor/laravel-filemanager/css');
-
-mix.babel([
-    'public/vendor/laravel-filemanager/js/dropzone.js',
-    'public/vendor/laravel-filemanager/js/sweetalert.js',
-    'public/vendor/laravel-filemanager/js/filemanager.js'
-], 'public/vendor/laravel-filemanager/js/filemanager.min.js');
+mix.sass('public/vendor/laravel-filemanager/css/dist/filemanager.scss', 'public/vendor/laravel-filemanager/css');
+mix.js('public/vendor/laravel-filemanager/js/dist/filemanager.js', 'public/vendor/laravel-filemanager/js/filemanager.min.js');

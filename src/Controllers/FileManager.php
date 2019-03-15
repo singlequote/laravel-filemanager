@@ -5,6 +5,7 @@ namespace SingleQuote\FileManager\Controllers;
 use SingleQuote\FileManager\Controllers\MediaController;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Storage;
 use Auth;
 /**
@@ -17,15 +18,95 @@ class FileManager extends Controller
     /**
      * Init the application
      *
-     * @return view
+     * @param Request $request
+     * @return mixed
      */
     public function index(Request $request)
     {
         if($request->filled('file')){
             $file = config('laravel-filemanager.encrypted') ? decrypt($request->file) : $request->file;
-            return (new MediaController)->getFile($request, $file);
+            return (new MediaController)->getFile($request, $file, 'json');
+        }elseif($request->filled('folder')){
+            return $this->getFolderPath($request);
         }
         return view('laravel-filemanager::index');
+    }
+
+    /**
+     * Return the folder path info
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
+     */
+    private function getFolderPath(Request $request)
+    {
+        $disk = config('laravel-filemanager.disk');
+
+        $path = Storage::disk($disk)->path($request->folder);
+
+        abort_unless(is_dir($path), 404);
+
+        return response()->json([
+            'filename' => basename($path),
+            'path' => $request->folder,
+            'type' => 'folder',
+            'content' => null
+        ]);
+
+    }
+
+    /**
+     * Load the configs
+     *
+     * @return response json
+     */
+    public function loadConfigs()
+    {
+        $encrypt       = config('laravel-filemanager.encrypted');
+        $privatePrefix = Auth::check() ? Auth::id() . '/'.config('laravel-filemanager.auth.private_prefix') : "emptyhere";
+        $sharedprefix  = config('laravel-filemanager.auth.shared_prefix');
+        return response()->json([
+            'asset'         => asset(''),
+            'root'          => config('laravel-filemanager.auth.private_folder') ? $encrypt ? encrypt($privatePrefix) : $privatePrefix : $sharedprefix,
+            'url'           => url(config('laravel-filemanager.prefix')),
+            'mediaurl'      => route(config('laravel-filemanager.media.prefix')),
+            'privatefolder' => config('laravel-filemanager.auth.private_folder'),
+            'privateprefix' => $encrypt ? encrypt($privatePrefix) : $privatePrefix,
+            'sharedfolder'  => config('laravel-filemanager.auth.shared_folder'),
+            'sharedprefix'  => $encrypt ? encrypt($sharedprefix) : $sharedprefix
+        ]);
+    }
+
+    /**
+     * Load a template
+     *
+     * @param string $template
+     * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+     */
+    public function loadTemplate(string $template)
+    {
+        if(view()->exists("laravel-filemanager::templates.$template")){
+            return view("laravel-filemanager::templates.$template");
+        }
+        abort(404, 'Template not found');
+    }
+
+    /**
+     * Load the content
+     *
+     * @param Request $request
+     * @return json
+     */
+    public function loadContent(Request $request)
+    {
+        $view = $request->get('view', 'thumb');
+        $directory = config('laravel-filemanager.encrypted') ? decrypt($request->folder) : $request->folder;
+        $root = $this->isRoot($directory ? $directory : '');
+        $previous = $this->getPrevious($directory ? $directory : '');
+        $disk = config('laravel-filemanager.disk');
+        $files = $this->createContentItems(Storage::disk($disk)->files($directory), $directory, true);
+        $folders = $this->createContentItems(Storage::disk($disk)->directories($directory), $directory, $root);
+        return response()->json(compact('directory', 'files', 'folders', 'root', 'previous','view'));
     }
 
     /**
@@ -36,10 +117,9 @@ class FileManager extends Controller
      */
     public function getSidebar()
     {
-        $directory = 'laravel-filemanager::partials';
-        $privateFolders = $this->getPrivateFolders();
-        $publicFolders = $this->getPublicFolders();
-        return view('laravel-filemanager::partials.sidebar')->with(compact('directory', 'privateFolders', 'publicFolders'));
+        $private = $this->getPrivateFolders();
+        $public = $this->getPublicFolders();
+        return response()->json(compact('private', 'public'));
     }
 
     /**
@@ -51,7 +131,7 @@ class FileManager extends Controller
         if(!config('laravel-filemanager.auth.private_folder')){
             return collect([]);
         }
-        $currentRoute = Auth::user()->id.'/'.config('laravel-filemanager.auth.private_prefix');
+        $currentRoute = Auth::check() ? Auth::user()->id.'/'.config('laravel-filemanager.auth.private_prefix') : 'emptyhere';
         return $this->createPaths($currentRoute, $currentRoute);
     }
 
@@ -85,30 +165,13 @@ class FileManager extends Controller
         foreach($folders as $folder){
             $name = explode('/', $folder);
             $structure[] = (object) [
-                'route'     => $folder,
+                'route'     => config('laravel-filemanager.encrypted') ? encrypt($folder) : $folder,
                 'name'      => end($name),
-                'children'  => $this->createPaths($route.'/'. end($name), $replace)
+                'children'  => $this->createPaths($route.'/'. end($name), $replace),
+                'id' => base64_encode(config('laravel-filemanager.encrypted') ? encrypt($folder) : $folder)
             ];
         }
         return collect($structure);
-    }
-
-    /**
-     * get the content
-     *
-     * @param Request $request
-     * @return view
-     */
-    public function getContent(Request $request)
-    {
-        $view = $request->get('view', 'thumb');
-        $directory = config('laravel-filemanager.encrypted') ? decrypt($request->folder) : $request->folder;
-        $root = $this->isRoot($directory);
-        $previous = $this->getPrevious($directory);
-        $disk = config('laravel-filemanager.disk');
-        $files = $this->createContentItems(Storage::disk($disk)->files($directory), $directory);
-        $folders = $this->createContentItems(Storage::disk($disk)->directories($directory), $directory);
-        return view('laravel-filemanager::partials.content')->with(compact('directory', 'files', 'folders', 'root', 'previous','view'));
     }
 
     /**
@@ -119,7 +182,7 @@ class FileManager extends Controller
      */
     protected function isRoot(string $directory = '')
     {
-        return count(explode('/',$directory)) === 1;
+        return count(explode('/',rtrim($directory, '/'))) === 1;
     }
 
     /**
@@ -142,21 +205,85 @@ class FileManager extends Controller
      * @param string $directory
      * @return string
      */
-    private function createContentItems($files, $directory)
+    private function createContentItems(array $files, $directory, bool $root = false)
     {
-        $items = [];
+        $items = $this->addRootItem($root, $directory);
         foreach($files as $file){
             $type = Storage::disk(config('laravel-filemanager.disk'))->mimeType($file);
             $exploded = explode('/', $type);
             $name = explode('/', $file);
+            $test = route(config('laravel-filemanager.media.prefix'), config('laravel-filemanager.encrypted') ? encrypt($directory.'/'.end($name)) : $directory.'/'.end($name));
+            $src = $this->getFileSource($file, 300);
+
+            $route = config('laravel-filemanager.encrypted') ? encrypt($directory.'/'.end($name)) : $directory.'/'.end($name);
             $items[] = (object) [
+                'size' => Storage::disk(config('laravel-filemanager.disk'))->size($file),
                 'name' => end($name),
-                'route' => $directory.'/'.end($name),
+                'route' => $route,
                 'mimetype' => $type,
-                'type' => (isset($exploded[0]))?$exploded[0]:$type
+                'type' => (isset($exploded[0]))?$exploded[0]:$type,
+                'src' => $src,
+                'id' => base64_encode($route)
             ];
         }
+        
         return collect($items);
+    }
+
+    /**
+     * Get the resource path for the files.
+     * This also returns the cached files when present
+     *
+     * @param string $file
+     * @param int $height
+     * @param int $width
+     * @return string
+     */
+    private function getFileSource(string $file, int $height = null, int $width = null) : string
+    {
+        $filename = Str::after($file, '/');
+        $path = "cached/".Str::before($file, $filename);
+
+        $height = $height ?? "false";
+        $width  = $width  ?? $height;
+
+        if(file_exists(public_path("$path$height-$width-$filename"))){
+            $src = url("$path$height-$width-$filename");
+        }else{
+            $src = route(config('laravel-filemanager.media.prefix'), $file)."/$height/$width";
+        }
+        
+        return config('laravel-filemanager.encrypted') ? encrypt($src) : $src;
+    }
+
+    /**
+     * Add root item for returning back to previous item
+     *
+     * @param bool $root
+     * @param string $directory
+     * @return array
+     */
+    private function addRootItem(bool $root, $directory) : array
+    {
+        $items = [];
+        $previous = $this->getPrevious($directory ? $directory : '');
+        $name = explode('/', $previous);
+        $id = Auth::check() ? Auth::id() : 'emptyhere';
+        $folderName = end($name);
+        if(starts_with($previous, $id)){
+            $folderName = Auth::user()->name;
+        }
+        if(!$root){
+            $items[] = (object) [
+                'name' => "<< $folderName",
+                'route' => config('laravel-filemanager.encrypted') ? encrypt($previous) : $previous,
+                'mimetype' => 'directory',
+                'type' => 'folder',
+                'src' => '',
+                'id' => 'root'
+            ];
+        }
+        return $items;
     }
 
     /**
@@ -170,18 +297,88 @@ class FileManager extends Controller
         try{
             $disk = config('laravel-filemanager.disk');
             $route = config('laravel-filemanager.encrypted') ? decrypt($request->route) : $request->route;
-            $explode = explode('/', $route);
-            $extension = explode('.', $request->rename);
-            array_pop($explode);
-            Storage::disk($disk)->move(
-                $route,
-                collect($explode)->implode('/').'/'.
-                $this->createFileSlug($request->rename, end($extension))
-            );
+
+            if($request->file('crop')){
+                $this->cropImage($disk, $route, $request);
+            }
+            if($request->filled('content')){
+                $this->editContentFile($disk, $route, $request);
+            }
+            if($request->filled('rename') &&  $request->type !== 'folder'){
+                $this->renameFile($disk, $route, $request);
+            }
+            if($request->filled('rename') &&  $request->type === 'folder'){
+                $this->renameFolder($disk, $route, $request);
+            }
+
             return response()->json(['status' => 'success']);
         } catch (\Exception $ex) {
             return response()->json(['status' => 'error', 'message' => $ex->getMessage()]);
         }
+    }
+
+    /**
+     * Save cropped image
+     *
+     * @param string $disk
+     * @param string $route
+     * @param Request $request
+     * @return boolean
+     */
+    private function cropImage(string $disk, string $route, Request $request)
+    {
+        $path = Storage::disk($disk)->path($route);
+        $filename = basename($path);
+        $path = $request->file('crop')->storeAs(
+            str_before($route, $filename), str_before($filename, '.')."-cropped.".str_after($filename, '.'), $disk
+        );
+        return true;
+    }
+
+    /**
+     * Rename file or folder
+     *
+     * @param string $disk
+     * @param string $route
+     * @param Request $request
+     * @return boolean
+     */
+    private function renameFile(string $disk, string $route, Request $request)
+    {
+        $explode = explode('/', $route);
+        $extension = explode('.', $request->rename);
+        array_pop($explode);
+        return Storage::disk($disk)->move(
+            $route,
+            collect($explode)->implode('/').'/'.
+            $this->createFileSlug($request->rename, end($extension))
+        );
+    }
+
+    /**
+     * Rename folder
+     *
+     * @param string $disk
+     * @param string $route
+     * @param Request $request
+     */
+    private function renameFolder(string $disk, string $route, Request $request)
+    {
+        $path = Storage::disk($disk)->path($route);
+        Storage::disk($disk)->move("$route", str_before($route, basename($path)).Str::slug($request->rename));
+    }
+
+    /**
+     * Edit the content of a file
+     *
+     * @param string $disk
+     * @param string $route
+     * @param Request $request
+     * @return type
+     */
+    private function editContentFile(string $disk, string $route, Request $request)
+    {
+        return Storage::disk($disk)->put($route, $request->content);
     }
 
     /**
@@ -192,14 +389,14 @@ class FileManager extends Controller
      */
     public function newItem(Request $request)
     {
-        try{
-            $folder = $this->folder($request->folder);
-            $disk = config('laravel-filemanager.disk');
-            Storage::disk($disk)->makeDirectory($folder.'/'.str_slug($request->name));
-            return response()->json(['status' => 'success']);
-        } catch (\Exception $ex) {
-            return response()->json(['status' => 'error', 'message' => $ex->getMessage()]);
-        }
+//        try{
+//            $folder = $this->folder($request->folder);
+//            $disk = config('laravel-filemanager.disk');
+//            Storage::disk($disk)->makeDirectory($folder.'/'.str_slug($request->name));
+//            return response()->json(['status' => 'success']);
+//        } catch (\Exception $ex) {
+//            return response()->json(['status' => 'error', 'message' => $ex->getMessage()]);
+//        }
     }
 
     /**
@@ -219,9 +416,9 @@ class FileManager extends Controller
             }else{
                 Storage::disk($disk)->deleteDirectory($route);
             }
-            return response()->json(['status' => 'success']);
+            return response()->json('', 204);
         } catch (Exception $ex) {
-            return response()->json(['status' => 'error', 'message' => $ex->getMessage()]);
+            return response()->json(['status' => 'error', 'message' => $ex->getMessage()], 500);
         }
     }
 
@@ -233,20 +430,20 @@ class FileManager extends Controller
      */
     public function uploadItem(Request $request)
     {
-        try{
-            $disk = config('laravel-filemanager.disk');
-            $upload = $request->file('file');
-            if($upload->isValid()){
-                $slug = $this->createFileSlug($upload->getClientOriginalName(), $upload->getClientOriginalExtension());
-                $path = $this->folder($request->folder);
-                $upload->storeAs(
-                    $path, $slug, $disk
-                );
-            }
-            return response()->json(['status' => 'success']);
-        } catch (\Exception $ex) {
-            return response()->json(['status' => 'error', 'message' => $ex->getMessage()]);
-        }
+//        try{
+//            $disk = config('laravel-filemanager.disk');
+//            $upload = $request->file('file');
+//            if($upload->isValid()){
+//                $slug = $this->createFileSlug($upload->getClientOriginalName(), $upload->getClientOriginalExtension());
+//                $path = $this->folder($request->folder);
+//                $upload->storeAs(
+//                    $path, $slug, $disk
+//                );
+//            }
+//            return response()->json(['status' => 'success']);
+//        } catch (\Exception $ex) {
+//            return response()->json(['status' => 'error', 'message' => $ex->getMessage()]);
+//        }
     }
 
     /**
@@ -257,9 +454,9 @@ class FileManager extends Controller
      */
     private function folder(string $folder) :string
     {
-        $param = str_replace('?folder=', '', $folder);
-        $path = config('laravel-filemanager.encrypted') ? decrypt($param) : $param;
-        return $path;
+//        $param = str_replace('?folder=', '', $folder);
+//        $path = config('laravel-filemanager.encrypted') ? decrypt($param) : $param;
+//        return $path;
     }
 
     /**
@@ -273,7 +470,6 @@ class FileManager extends Controller
     {
         $slug = str_slug($clientName);
         return str_replace($extension, ".$extension", $slug);
-       
     }
     
 

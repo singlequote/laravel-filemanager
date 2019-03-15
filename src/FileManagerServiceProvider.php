@@ -18,15 +18,17 @@ class FileManagerServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/resources/views', 'laravel-filemanager');
 
         //publish the routes
+        //php artisan vendor:publish --tag=config --force
         $this->publishes([
             __DIR__.'/../config/laravel-filemanager.php' => config_path('laravel-filemanager.php')
         ], 'config');
 
         //publish the views and styling
+        //php artisan vendor:publish --tag=public --force
         $this->publishes([
-            __DIR__.'/resources/css' => public_path('vendor/laravel-filemanager/css'),
-            __DIR__.'/resources/js' => public_path('vendor/laravel-filemanager/js'),
-            __DIR__.'/resources/views' => resource_path('views/vendor/laravel-filemanager'),
+            __DIR__.'/resources/css/filemanager.css'    => public_path('vendor/laravel-filemanager/css/filemanager.min.css'),
+            __DIR__.'/resources/js/filemanager.min.js'  => public_path('vendor/laravel-filemanager/js/filemanager.min.js'),
+            __DIR__.'/resources/views'                  => resource_path('views/vendor/laravel-filemanager'),
         ], 'public');
     }
 
