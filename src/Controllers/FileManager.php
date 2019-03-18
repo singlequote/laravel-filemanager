@@ -394,14 +394,14 @@ class FileManager extends Controller
      */
     public function newItem(Request $request)
     {
-//        try{
-//            $folder = $this->folder($request->folder);
-//            $disk = config('laravel-filemanager.disk');
-//            Storage::disk($disk)->makeDirectory($folder.'/'.str_slug($request->name));
-//            return response()->json(['status' => 'success']);
-//        } catch (\Exception $ex) {
-//            return response()->json(['status' => 'error', 'message' => $ex->getMessage()]);
-//        }
+        try{
+            $folder = $this->folder($request->path);
+            $disk = config('laravel-filemanager.disk');
+            Storage::disk($disk)->makeDirectory($folder.'/'.str_slug($request->name));
+            return response()->json(['status' => 'success']);
+        } catch (\Exception $ex) {
+            return response()->json(['status' => 'error', 'message' => $ex->getMessage()]);
+        }
     }
 
     /**
@@ -475,11 +475,11 @@ class FileManager extends Controller
      * @param string $folder
      * @return string
      */
-    private function folder(string $folder) :string
+    private function folder(string $folder) : string
     {
-//        $param = str_replace('?folder=', '', $folder);
-//        $path = config('laravel-filemanager.encrypted') ? decrypt($param) : $param;
-//        return $path;
+        $param = Str::after($folder, 'folder=');
+        $path = config('laravel-filemanager.encrypted') ? decrypt($param) : $param;
+        return $path;
     }
 
     /**

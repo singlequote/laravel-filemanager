@@ -62,7 +62,7 @@ export default class FilemanagerAction{
             e.preventDefault();
             self.upload(e, $(this));
         });
-        $(document).on('click', `[data-action='new']:not([disabled])`, function (e) {
+        $(document).on('click', `[data-action='create']:not([disabled])`, function (e) {
             e.preventDefault();
             self.create(e, $(this));
         });
@@ -124,23 +124,19 @@ export default class FilemanagerAction{
      */
     create(event, element)
     {
-//        $(this.doms.modalPreview).find('.body').html(`
-//            <br>
-//            <form id="action-form" method="post" action="${this.url}${this.routes.actions.new}">
-//                <input type="hidden" name="folder" value="${this.addition}">
-//                <input type="hidden" name="_token" value="${this._token}">
-//                <div class="row">
-//                    <div class="col-12">
-//                        <input type="text" name="name" placeholder="Folder..." required="true" class="form-control">
-//                    </div>
-//                    <div class="col-12">
-//                        <br> 
-//                        <button type="submit" class="btn btn-success">Save</button>
-//                    </div>
-//                </div>
-//            </form>
-//        `);
-//        $(this.doms.modalPreview).modal('show');
+        
+        this.template.loadTemplate(`modals.modal-preview`, () => {
+            this.template.parseTemplate({header : "Create folder"}, 'modals.modal-preview', this.parent.doms.modals);
+            this.modal.show(this.parent.doms.modalPreview, {width : "40%"});
+        });
+        
+        this.template.loadTemplate(`forms.create-folder`, () => {
+            this.template.parseTemplate({
+                _token : this.parent._token,
+                action : `${this.parent.url}/action/create`,
+                path : this.parent.addition,
+            }, 'forms.create-folder', `${this.parent.doms.modalPreview} .body`, true);
+        });
     }
     
     /**

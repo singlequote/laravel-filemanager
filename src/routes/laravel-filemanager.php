@@ -14,9 +14,9 @@ Route::group(['prefix' => config('laravel-filemanager.prefix'), 'middleware' => 
     Route::group(['prefix' => 'action'],function () {
         Route::post('upload'    , '\SingleQuote\FileManager\Controllers\FileManager@uploadItem');
         Route::post('edit'      , '\SingleQuote\FileManager\Controllers\FileManager@editItem');
-        Route::post('new'       , '\SingleQuote\FileManager\Controllers\FileManager@newItem');
+        Route::post('create'    , '\SingleQuote\FileManager\Controllers\FileManager@newItem');
         Route::delete('delete'  , '\SingleQuote\FileManager\Controllers\FileManager@deleteItem');
-        Route::delete('clear'  , '\SingleQuote\FileManager\Controllers\FileManager@clearCache');
+        Route::delete('clear'   , '\SingleQuote\FileManager\Controllers\FileManager@clearCache');
     });
 
 });

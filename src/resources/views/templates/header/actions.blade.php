@@ -16,7 +16,7 @@
     </span>
 </div>
 
-<div class='action-button' data-action='new'>
+<div class='action-button' data-action='create'>
     <i data-feather="folder-plus"></i>
     <span>
         <span>

@@ -3,7 +3,7 @@
 
     <!-- Modal content -->
     <div class="content">
-        <div class="header" lf-append="filename">
+        <div class="header" lf-append="filename;header">
             <!--header-->
         </div>
         <div class="body">
