@@ -106,10 +106,9 @@ class FileManager extends Controller
         $root = $this->isRoot($directory ? $directory : '');
         $previous = $this->getPrevious($directory ? $directory : '');
         $disk = config('laravel-filemanager.disk');
-        
+
         $files = $this->createContentItems(Storage::disk($disk)->files($directory), $directory, true);
         $folders = $this->createContentItems(Storage::disk($disk)->directories($directory), $directory, $root);
-        
         return response()->json(compact('directory', 'files', 'folders', 'root', 'previous','view'));
     }
 
@@ -122,7 +121,7 @@ class FileManager extends Controller
     public function getSidebar()
     {
         $private = $this->getPrivateFolders();
-        
+
         $public = $this->getPublicFolders();
 
         return response()->json(compact('private', 'public'));
@@ -219,12 +218,12 @@ class FileManager extends Controller
             $exploded = explode('/', $type);
             $name = explode('/', $file);
             $src = $this->getFileSource($file, 300);
-            
+
             $route = config('laravel-filemanager.encrypted') ? encrypt($directory.'/'.end($name)) : $directory.'/'.end($name);
             $items[] = (object) [
                 'size' => Storage::disk(config('laravel-filemanager.disk'))->size($file),
                 'name' => end($name),
-                'route' => $route,
+                'route' => ltrim($route, '/'),
                 'mimetype' => $type,
                 'type' => (isset($exploded[0]))?$exploded[0]:$type,
                 'src' => $src,
@@ -232,7 +231,7 @@ class FileManager extends Controller
                 'cached' => $type !== 'directory' ? (new MediaController)->findCachedFiles($route, end($name)) : []
             ];
         }
-        
+
         return collect($items);
     }
 
@@ -441,9 +440,9 @@ class FileManager extends Controller
         $path = Str::after($request->directory, '=');
 
         $file = str_slug(Str::before($filename, '.'));
-        
+
         $route = $request->file->storeAs($path, "$file.$extension", $disk);
-        
+
         if($request->has('thumb')){
             $driver = (new MediaController)->driver;
             foreach($request->thumb as $size => $value){
@@ -460,7 +459,7 @@ class FileManager extends Controller
     }
 
     /**
-     * 
+     *
      */
     public function clearCache()
     {
@@ -494,6 +493,6 @@ class FileManager extends Controller
         $slug = str_slug($clientName);
         return str_replace($extension, ".$extension", $slug);
     }
-    
+
 
 }
