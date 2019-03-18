@@ -6,5 +6,5 @@
     <label for="filename">File name</label>
     <input class="filemanager-input" type="text" id="filename" name="rename"  lf-attribute="value:filename">
     <br>
-    <button type="submit" class="action-button">Save</button>
+    <button type="submit" class="button button-blue">Save</button>
 </form>

@@ -378,7 +378,7 @@ class FileManager
         let url = `${this.url}/${this.addition}`;
         let mark = url.includes('?') ? '&' : '?';
         
-        if(this.picker){
+        if(this.filepicker){
             $.get(`${url}${mark}file=${element.data('route')}`, (response) => {
                 return this.return.callback(response);
             });
@@ -393,7 +393,10 @@ class FileManager
 
                 if(response.type.startsWith('image')){
                     $(this.doms.modalPreview).find('.body').html(`
-                        <img src="${response.content}" class="img-fluid">
+                        <img src="${response.route}">
+                    `);
+                    $(this.doms.modalPreview).find('.footer').html(`
+                        <a style="color:white;" target="_blank" href="${response.route}">Open original</a>
                     `);
                 }else if(response.type.startsWith('text')){
                     this.modal.plugin(`codemirror`, response);

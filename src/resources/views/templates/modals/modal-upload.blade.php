@@ -1,11 +1,15 @@
-<div class="modal fade modal-primary" id="filemanager-media-upload" tabindex="-1" role="dialog" aria-labelledby="filemanager-media-preview">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-body text-default"></div>
-            <div class="modal-footer justify-content-end">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            </div>
+<!-- The Modal -->
+<div id="filemanager-media-upload" class="modal dropzone">
+
+    <!-- Modal content -->
+    <div class="content">
+        <div class="header">
+            Upload files
+        </div>
+        <div class="body">
+            <!--body-->
         </div>
     </div>
-</div>
 
+
+</div>

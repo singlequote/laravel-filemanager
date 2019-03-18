@@ -1,4 +1,5 @@
 import Swal from './sweetalert';
+import Dropzone from './dropzone';
 
 /**
  * 
@@ -53,9 +54,9 @@ export default class FilemanagerAction{
     loadEvents()
     {
         let self = this;
-        $(document).on('click', `[data-action='cache']:not([disabled])`, function (e) {
+        $(document).on('click', `[data-action='clear']:not([disabled])`, function (e) {
             e.preventDefault();
-            $.post(`${self.parent.url}/action/clear`, {_token : self.parent._token}, () => self.parent.message('cache cleared'));
+            $.post(`${self.parent.url}/action/clear`, {_method:'delete', _token : self.parent._token}, () => self.parent.message('cache cleared'));
         });
         $(document).on('click', `[data-action='upload']:not([disabled])`, function (e) {
             e.preventDefault();
@@ -92,22 +93,28 @@ export default class FilemanagerAction{
      */
     upload(event, element)
     {
-//        event.preventDefault();
-//        let self = this;
-//        $(this.doms.modalPreview).find('.modal-body').html(`
-//            <form class="dropzone" id="fileUploadForm"><input type="hidden" name="_token" value="${this._token}"><input type="hidden" name="folder" value="${this.addition}"></form>
-//        `);
-//        var uploadZone = new Dropzone("#fileUploadForm", { url: this.url+this.routes.actions.upload });
-//        Dropzone.options.fileUploadForm = {
-//            init: function () {
-//                this.on("complete", function (file) {
-//                    if (this.getUploadingFiles().length === 0 && this.getQueuedFiles().length === 0) {
-//                        self.loadContent();
-//                    }
-//                });
-//            }
-//        };
-//        $(this.doms.modalPreview).modal('show');
+        this.template.loadTemplate('modals.modal-upload', (response) => {
+            $(this.parent.doms.modals).html(response);
+        });
+        this.template.loadTemplate('forms.upload', () => {
+           this.modal.show(`#filemanager-media-upload`, {width: '50%'});
+            this.template.parseTemplate({
+                _token : this.parent._token,
+                directory : this.parent.addition
+            }, 'forms.upload', '#filemanager-media-upload .body');
+            
+            var uploadZone = new Dropzone("#action-form", { url: `${this.parent.url}/action/upload` });
+            let self = this;
+            Dropzone.options.fileUploadForm = {
+                init: function () {
+                    this.on("complete", function (file) {
+                        if (this.getUploadingFiles().length === 0 && this.getQueuedFiles().length === 0) {
+                            self.parent.loadContent();
+                        }
+                    });
+                }
+            };
+        });
     }
     
         /**
@@ -136,14 +143,13 @@ export default class FilemanagerAction{
 //        $(this.doms.modalPreview).modal('show');
     }
     
+    /**
+     * Load plugin cropper
+     * 
+     */
     crop(event, element)
     {
-//        this.template.loadTemplate('modals.modal-preview', (response) => {
-//            this.template.parseTemplate({filename : $('.activeFile').find('.label').html()}, 'modals.modal-preview', this.parent.doms.modals, true);
-            this.modal.plugin('cropper', {route : $('.activeFile').data('route'), filename : $('.activeFile').find('.label').html()});
-//            this.modal.show(this.parent.doms.modalPreview, {width:'50%'});
-//        });
-        
+        this.modal.plugin('cropper', {route : $('.activeFile').data('route'), filename : $('.activeFile').find('.label').html()});        
     }
     
     /**

@@ -52,7 +52,7 @@ return [
          * loaded way faster and the browser caches the images when there is no php required.
          *
          */
-        'create_hyperlink' => false,
+        'create_hyperlink' => true,
         //The path starting inside the public folder
         'hyperlink_path' => 'cached',
         /**
@@ -63,7 +63,7 @@ return [
          * The driver for resizing the file
          * Supported drivers are fit and resize
          */
-        'driver' => 'resize',
+        'driver' => 'fit',
         /**
          * Middleware for showing media files
          */

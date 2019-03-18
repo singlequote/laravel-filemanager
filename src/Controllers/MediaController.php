@@ -12,9 +12,9 @@ use Image;
 class MediaController extends Controller
 {
 
-    protected $driver = 'fit';
+    public $driver = 'fit';
 
-    protected $cachefolder = 'cached';
+    public $cachefolder = 'cached';
 
     /**
      * 
@@ -31,19 +31,19 @@ class MediaController extends Controller
      * @return reponse mixed file
      * @author Wim Pruiksma <wim@acfbentveld.nl>
      */
-    public function getFile(Request $request, $file = false, $response = false)
+//    public function getFile(Request $request, $file = false, $response = false)
+    public function getFile(Request $request, $height = null, $width = null, $file = null, $response = false)
     {
         $this->request = $request;
         $this->response = $response;
         
-        $this->retrieveSizes($file);
+        $this->retrieveSizes($file, $height, $width);
         
         if(!$response && $this->checkForCachedFile()){
             return response()->file($this->file);
         }
         
         $this->checkIfFileExists();
-
         $path               = Storage::disk(config('laravel-filemanager.disk'))->path(str_replace('//', '/', $this->file));
         $pathinfo           = pathinfo($path);
         $mimetype           = Storage::disk(config('laravel-filemanager.disk'))->mimeType($this->file);
@@ -58,13 +58,23 @@ class MediaController extends Controller
      * @param string $file
      * @return string
      */
-    private function retrieveSizes(string $file) : string
+    private function retrieveSizes($file, $height, $width) : string
     {
-        $keys = array_reverse(explode('/',$file));
-        $this->height   = is_numeric($keys[1]) ? intval($keys[1]) : null;
-        $this->width    = is_numeric($keys[0]) ? intval($keys[0]) : $this->height;
+        $this->height   = is_numeric($height) ? $height : null;
+        $this->width    = is_numeric($width) ? $width : $height;
+        $this->width    = is_numeric($this->width) ? $this->width : null;
+
+        $this->file     = $file;
+
+        if(!is_numeric($width)){
+            $this->file = implode([$width, $file], '/');
+        }
         
-        return $this->file = !$this->height && !$this->width ? $file : Str::before($file, "/$this->height");
+        if(!is_numeric($height)){
+            $this->file = implode([$height, $width], '/');
+        }
+
+        return $this->file ?? $file;
     }
 
     /**
@@ -78,8 +88,8 @@ class MediaController extends Controller
         $filename = Str::after($this->file, '/');
         $path = public_path("$this->cachefolder/".Str::before($this->file, $filename));
         
-        $height = $this->height ?? "false";
-        $width  = $this->width  ?? "false";
+        $height = $this->height ?? "";
+        $width  = $this->width  ?? "";
 
         if(file_exists("$path$height-$width-$filename")){
             $this->file = "$path$height-$width-$filename";
@@ -122,7 +132,7 @@ class MediaController extends Controller
 
             return $this->response === 'json' ? 
                 $this->imageAsJson($content, $path, $filename, $mimetype) :
-                $this->imageFile($content, $path, $filename, $mimetype);
+                $this->imageFile($content, $path, $filename);
         }elseif(starts_with($mimetype, 'pdf')){
 
             return $this->pdfFile($content, $path, $filename, $mimetype);
@@ -164,7 +174,7 @@ class MediaController extends Controller
      * @param type $filename
      * @return mixed response
      */
-    private function imageFile(string $content, string $path, string $filename, string $mimetype)
+    private function imageFile(string $content, string $path, string $filename)
     {
         $image      = Image::make($path)->orientate();
 
@@ -177,8 +187,8 @@ class MediaController extends Controller
 
         })->encode(null, $this->request->get('q', 100));
         
-        if(config('laravel-filemanager.media.create_hyperlink', false)){
-            $this->cacheImageResponse($image, $filename);
+        if(config('laravel-filemanager.media.create_hyperlink', false) &&  $this->height){
+            $this->cacheImageResponse($image, $this->file, $filename, $height, $width);
         }
         return $image->response();
     }
@@ -189,15 +199,12 @@ class MediaController extends Controller
      * @param \Intervention\Image\Image $image
      * @param string $filename
      */
-    private function cacheImageResponse(\Intervention\Image\Image $image, string $filename)
+    public function cacheImageResponse(\Intervention\Image\Image $image, string $file, string $filename, int $height = null, int $width = null)
     {
-        $path = public_path("$this->cachefolder/".Str::before($this->file, $filename));
+        $path = public_path("$this->cachefolder/".Str::before($file, $filename));
         if(!is_dir($path)){
             mkdir($path, 0577, true);
         }
-
-        $height = $this->height ?? "false";
-        $width = $this->width ?? "false";
 
         $name = Str::before($filename,'.');
         $extension = Str::after($filename,'.');
@@ -218,7 +225,7 @@ class MediaController extends Controller
             'filename' => $filename,
             'path' => $this->originfile,
             'route' => route(config('laravel-filemanager.media.prefix'), $this->originfile),
-            'cached' => $this->findCachedFiles($filename)
+            'cached' => $this->findCachedFiles($this->file, $filename)
         ]);
     }
 
@@ -228,9 +235,12 @@ class MediaController extends Controller
      * @param string $filename
      * @return array
      */
-    private function findCachedFiles(string $filename) : array
+    public function findCachedFiles(string $route, string $filename) : array
     {
-        $directory = Str::before($this->file, $filename);
+        $directory = Str::before($route, $filename);
+        if(!is_dir(public_path("$this->cachefolder/$directory"))){
+            return [];
+        }
         $cachefiles = [];
         foreach(scandir(public_path("$this->cachefolder/$directory")) as $file){
             if(Str::contains($file, $filename)){

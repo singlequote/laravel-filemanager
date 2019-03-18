@@ -65,10 +65,10 @@ export default class FilemanagerTemplate{
     /**
      * Parse the template file
      * 
-     * @param {type} item
-     * @param {type} type
-     * @param {type} appendto
-     * @param {type} truncate
+     * @param {mixed} item
+     * @param {mixed} type
+     * @param {mixed} appendto
+     * @param {mixed} truncate
      * @returns {undefined}
      */
     parseTemplate(item, type, appendto, truncate = false)

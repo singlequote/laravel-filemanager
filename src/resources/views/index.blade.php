@@ -6,7 +6,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
         <!--REQUIRED CSS-->
-        <link type='text/css' rel='stylesheet' href='{{asset('vendor/laravel-filemanager/css/filemanager.css')}}' />
+        <link type='text/css' rel='stylesheet' href='{{asset('vendor/laravel-filemanager/css/filemanager.min.css')}}' />
         <!--END REQUIRED CSS-->
     </head>
     <body style="background-image:url('https://picsum.photos/2000?blur');">

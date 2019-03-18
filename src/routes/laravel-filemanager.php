@@ -16,6 +16,7 @@ Route::group(['prefix' => config('laravel-filemanager.prefix'), 'middleware' => 
         Route::post('edit'      , '\SingleQuote\FileManager\Controllers\FileManager@editItem');
         Route::post('new'       , '\SingleQuote\FileManager\Controllers\FileManager@newItem');
         Route::delete('delete'  , '\SingleQuote\FileManager\Controllers\FileManager@deleteItem');
+        Route::delete('clear'  , '\SingleQuote\FileManager\Controllers\FileManager@clearCache');
     });
 
 });
@@ -24,6 +25,6 @@ Route::group(['prefix' => config('laravel-filemanager.prefix'), 'middleware' => 
  * Media route
  */
 Route::group(['prefix' => config('laravel-filemanager.media.prefix'), 'middleware' => config('laravel-filemanager.media.middleware')],function () {
-    Route::get('{file?}'    , '\SingleQuote\FileManager\Controllers\MediaController@getFile')->where('file', '(.*)')->name(config('laravel-filemanager.media.prefix'));
+    Route::get('{height?}/{width?}/{file?}'    , '\SingleQuote\FileManager\Controllers\MediaController@getFile')->where('file', '(.*)')->name(config('laravel-filemanager.media.prefix'));
 });
 

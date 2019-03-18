@@ -6,8 +6,10 @@ use SingleQuote\FileManager\Controllers\MediaController;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Image;
 use Storage;
 use Auth;
+use Cache;
 /**
  * Init the cart controller
  *
@@ -67,7 +69,7 @@ class FileManager extends Controller
         $sharedprefix  = config('laravel-filemanager.auth.shared_prefix');
         return response()->json([
             'asset'         => asset(''),
-            'root'          => config('laravel-filemanager.auth.private_folder') ? $encrypt ? encrypt($privatePrefix) : $privatePrefix : $sharedprefix,
+            'root'          => config('laravel-filemanager.auth.private_folder') && \Auth::check() ? $encrypt ? encrypt($privatePrefix) : $privatePrefix : $sharedprefix,
             'url'           => url(config('laravel-filemanager.prefix')),
             'mediaurl'      => route(config('laravel-filemanager.media.prefix')),
             'privatefolder' => config('laravel-filemanager.auth.private_folder'),
@@ -104,8 +106,17 @@ class FileManager extends Controller
         $root = $this->isRoot($directory ? $directory : '');
         $previous = $this->getPrevious($directory ? $directory : '');
         $disk = config('laravel-filemanager.disk');
-        $files = $this->createContentItems(Storage::disk($disk)->files($directory), $directory, true);
-        $folders = $this->createContentItems(Storage::disk($disk)->directories($directory), $directory, $root);
+        
+        $files = Cache::remember("filemanager-files-$directory", 86400, function() use ($disk, $directory){
+            return $this->createContentItems(Storage::disk($disk)->files($directory), $directory, true);
+        });
+
+        $folders = Cache::remember("filemanager-folders-$directory", 86400, function() use ($disk, $directory, $root){
+            return $this->createContentItems(Storage::disk($disk)->directories($directory), $directory, $root);
+        });
+
+        
+        
         return response()->json(compact('directory', 'files', 'folders', 'root', 'previous','view'));
     }
 
@@ -118,7 +129,9 @@ class FileManager extends Controller
     public function getSidebar()
     {
         $private = $this->getPrivateFolders();
+        
         $public = $this->getPublicFolders();
+
         return response()->json(compact('private', 'public'));
     }
 
@@ -212,9 +225,8 @@ class FileManager extends Controller
             $type = Storage::disk(config('laravel-filemanager.disk'))->mimeType($file);
             $exploded = explode('/', $type);
             $name = explode('/', $file);
-            $test = route(config('laravel-filemanager.media.prefix'), config('laravel-filemanager.encrypted') ? encrypt($directory.'/'.end($name)) : $directory.'/'.end($name));
             $src = $this->getFileSource($file, 300);
-
+            
             $route = config('laravel-filemanager.encrypted') ? encrypt($directory.'/'.end($name)) : $directory.'/'.end($name);
             $items[] = (object) [
                 'size' => Storage::disk(config('laravel-filemanager.disk'))->size($file),
@@ -223,7 +235,8 @@ class FileManager extends Controller
                 'mimetype' => $type,
                 'type' => (isset($exploded[0]))?$exploded[0]:$type,
                 'src' => $src,
-                'id' => base64_encode($route)
+                'id' => base64_encode($route),
+                'cached' => $type !== 'directory' ? (new MediaController)->findCachedFiles($route, end($name)) : []
             ];
         }
         
@@ -244,15 +257,14 @@ class FileManager extends Controller
         $filename = Str::after($file, '/');
         $path = "cached/".Str::before($file, $filename);
 
-        $height = $height ?? "false";
+        $height = $height ?? null;
         $width  = $width  ?? $height;
 
         if(file_exists(public_path("$path$height-$width-$filename"))){
             $src = url("$path$height-$width-$filename");
         }else{
-            $src = route(config('laravel-filemanager.media.prefix'), $file)."/$height/$width";
+            $src = route(config('laravel-filemanager.media.prefix'), [$height, $width, $file]);
         }
-        
         return config('laravel-filemanager.encrypted') ? encrypt($src) : $src;
     }
 
@@ -430,20 +442,38 @@ class FileManager extends Controller
      */
     public function uploadItem(Request $request)
     {
-//        try{
-//            $disk = config('laravel-filemanager.disk');
-//            $upload = $request->file('file');
-//            if($upload->isValid()){
-//                $slug = $this->createFileSlug($upload->getClientOriginalName(), $upload->getClientOriginalExtension());
-//                $path = $this->folder($request->folder);
-//                $upload->storeAs(
-//                    $path, $slug, $disk
-//                );
-//            }
-//            return response()->json(['status' => 'success']);
-//        } catch (\Exception $ex) {
-//            return response()->json(['status' => 'error', 'message' => $ex->getMessage()]);
-//        }
+        $disk = config('laravel-filemanager.disk');
+        $filename = $request->file('file')->getClientOriginalName();
+        $extension = $request->file('file')->getClientOriginalExtension();
+        $path = Str::after($request->directory, '=');
+
+        $file = str_slug(Str::before($filename, '.'));
+        
+        $route = $request->file->storeAs($path, "$file.$extension", $disk);
+        
+        if($request->has('thumb')){
+            $driver = (new MediaController)->driver;
+            foreach($request->thumb as $size => $value){
+                $image      = Image::make(Storage::disk($disk)->path($route))->orientate();
+                $image->{config('laravel-filemanager.media.driver', $driver)}($size, $size, function($constraint){
+                    $constraint->upsize();
+                    $constraint->aspectRatio();
+                })->encode(null, $request->get('q', 100));
+                (new MediaController)->cacheImageResponse($image, $route, "$file.$extension", $size, $size);
+            }
+        }
+
+        return response()->json(['status' => 'success']);
+    }
+
+    /**
+     * 
+     */
+    public function clearCache()
+    {
+        $cache = (new MediaController)->cachefolder;
+        array_map('unlink', glob(public_path($cache)));
+        Cache::flush();
     }
 
     /**

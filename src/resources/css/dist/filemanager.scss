@@ -98,9 +98,24 @@ $disabled-color : #d8d8d8;
             width:100%;
             color:$text-color;
         }
-
-
     }
+    
+    .button{
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        cursor:pointer;
+    }
+    
+    .button-green {background-color: #4CAF50;} /* Green */
+    .button-blue {background-color: #008CBA;} /* Blue */
+    .button-red {background-color: #f44336;} /* Red */ 
+    .button-gray {background-color: #e7e7e7; color: black;} /* Gray */ 
+    .button-black {background-color: #555555;} /* Black */
 
     .action-button[disabled]{
         svg{
@@ -213,6 +228,7 @@ $disabled-color : #d8d8d8;
                 }
 
                 .icon {
+                    background-size: cover;
                     height: 70%;
 
                     svg{
