@@ -27,7 +27,7 @@ class FileManager extends Controller
     {
         if($request->filled('file')){
             $file = config('laravel-filemanager.encrypted') ? decrypt($request->file) : $request->file;
-            return (new MediaController)->getFile($request, $file, 'json');
+            return (new MediaController)->getFile($request, $file, null, null, 'json');
         }elseif($request->filled('folder')){
             return $this->getFolderPath($request);
         }
@@ -107,15 +107,8 @@ class FileManager extends Controller
         $previous = $this->getPrevious($directory ? $directory : '');
         $disk = config('laravel-filemanager.disk');
         
-        $files = Cache::remember("filemanager-files-$directory", 86400, function() use ($disk, $directory){
-            return $this->createContentItems(Storage::disk($disk)->files($directory), $directory, true);
-        });
-
-        $folders = Cache::remember("filemanager-folders-$directory", 86400, function() use ($disk, $directory, $root){
-            return $this->createContentItems(Storage::disk($disk)->directories($directory), $directory, $root);
-        });
-
-        
+        $files = $this->createContentItems(Storage::disk($disk)->files($directory), $directory, true);
+        $folders = $this->createContentItems(Storage::disk($disk)->directories($directory), $directory, $root);
         
         return response()->json(compact('directory', 'files', 'folders', 'root', 'previous','view'));
     }

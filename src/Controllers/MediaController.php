@@ -31,7 +31,6 @@ class MediaController extends Controller
      * @return reponse mixed file
      * @author Wim Pruiksma <wim@acfbentveld.nl>
      */
-//    public function getFile(Request $request, $file = false, $response = false)
     public function getFile(Request $request, $height = null, $width = null, $file = null, $response = false)
     {
         $this->request = $request;
