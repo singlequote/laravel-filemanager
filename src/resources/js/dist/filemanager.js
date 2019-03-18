@@ -20,6 +20,7 @@ class FileManager
         this.booted = false;
         this.insideWindow = false;
         this.filepicker = false;
+        this.setDefaultConfigs();
     }
 
     
@@ -31,7 +32,6 @@ class FileManager
     boot()
     {
         this.setDomElements();
-        this.setDefaultConfigs();
               
         this.loadEvents();
                 

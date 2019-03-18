@@ -26,7 +26,7 @@ class FileManagerServiceProvider extends ServiceProvider
         //publish the views and styling
         //php artisan vendor:publish --tag=public --force
         $this->publishes([
-            __DIR__.'/resources/css/filemanager.css'    => public_path('vendor/laravel-filemanager/css/filemanager.min.css'),
+            __DIR__.'/resources/css/filemanager.min.css'    => public_path('vendor/laravel-filemanager/css/filemanager.min.css'),
             __DIR__.'/resources/js/filemanager.min.js'  => public_path('vendor/laravel-filemanager/js/filemanager.min.js'),
             __DIR__.'/resources/views'                  => resource_path('views/vendor/laravel-filemanager'),
         ], 'public');
