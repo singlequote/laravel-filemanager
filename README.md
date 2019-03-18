@@ -13,111 +13,12 @@ You can install the package via composer:
 composer require singlequote/laravel-filemanager
 
 php artisan vendor:publish --tag=public --force
-php artisan vendor:publish --tag=config
+php artisan vendor:publish --tag=config --force
 ```
 
 ### Why use this? 
 Well let me tell you. This package has its own media viewer. This means you can open files in every view wherever you want. Also the media viewer optimizes your images to fit every weird structure you make. And yes the filemanager makes it easy as well! Manage your private files or share it with other users!
 
-## Todo list
-Every new version release we create a new todo list. And yes you can help with that! Create a merge request with fixes, feutures and whatever you code.
-#### Version 1.0.0 - Release
-- [ ] Creating docs
-- [ ] Creating tests
-- [ ] Intergrating permissions 
-- [ ] Stand alone button for image picker
-- [ ] Ability to crop images
-
-## Usage
-
-### Media viewer
-Yes this package has its own media viewer and i know thats awesome. If you want to show images from your filemanager you can use the media route. in the  filemanager config file there is a line `media.prefix` this is your route name. The default value is `media`
-
-Accepting paramaters :
-* Height (h = 100)
-* Width (w = 100)
-* Quality (q = 100) in %
-* Driver (d = fit|resize) see the media driver options
-
-```php
-    // The path to your file is the path starting from your filemanagers root 
-    
-    <img src='{{route('media',  'path/to/image.png')}}'> //This uses the original size and quality of the image
-    
-    <img src='{{route('media',  'path/to/image.png')}}?h=100&w=100&q=50&d=resize'> //this creates a nice thumb image 100x100 with 50% of the quality. This is good for performance on big files
-```
-
-### Media driver
-The media driver supports two types of image resizing. `fit` and `resize`
-
-#### Fit
-Combine cropping and resizing to format image in a smart way. The method will find the best fitting aspect ratio of your given width and height on the current image automatically, cut it out and resize it to the given dimension. You may pass an optional Closure callback as third parameter, to prevent possible upsizing and a custom position of the cutout as fourth parameter.
-
-#### Resize
-Resizes current image based on given width and/or height. To constraint the resize command, pass an optional Closure callback as third parameter.
-
-### Filemanager
-Lets keep it all simple. For this package you need a view and some require html. When you publish the resources, you get a demo page with all the basics.
-```html
-<div class='row' id="filemanager">
-    <!--Sidebar-->
-    <div class='col-3'>
-        <div class="card bg-default">
-            <div class="card-header">Sidebar</div>
-            <div class="card-body">
-              <div id='filemanager-sidebar'></div>
-            </div>
-        </div>
-    </div>
-
-    <!--Files content-->
-    <div class='col'>
-        <div class="card text-white bg-default">
-            <div class="card-header">Content</div>
-            <div class="card-body">
-              <div id='filemanager-content'></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!--The modal needed for the package-->
-<div class="modal fade modal-primary" id="filemanager-media-preview" tabindex="-1" role="dialog" aria-labelledby="filemanager-media-preview">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-body text-default"></div>
-            <div class="modal-footer justify-content-end">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-```
-And also include the scripts and css
-```html
-<!--Bootstrap and stuff-->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://bootswatch.com/4/flatly/bootstrap.min.css">
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-
-<!--This is required for a nice view-->
-<link type='text/css' rel='stylesheet' href='{{asset('vendor/laravel-filemanager/css/filemanager.css')}}' />
-```
-And the scripts
-```html
-<!--Kinda required! Jquery is needed and bootstrap is just easy-->
-<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
-<!-- Required script and calls -->
-<script type='text/javascript' src='{{asset('vendor/laravel-filemanager/js/filemanager.min.js')}}'></script>
-<script type='text/javascript'>
-    filemanager = new FileManager;
-    filemanager.root = "{{Auth::user()->id}}";
-    filemanager.token = "{{csrf_token()}}";
-</script>
-```
-`Thats all!` Have fun using it
 
 
 
