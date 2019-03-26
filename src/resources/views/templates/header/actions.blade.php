@@ -53,3 +53,12 @@
         </span>
     </span>
 </div>
+
+<div class='action-button' data-action='resize'>
+    <i data-feather="crop"></i>
+    <span>
+        <span>
+            <span>Resize</span>
+        </span>
+    </span>
+</div>

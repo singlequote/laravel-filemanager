@@ -1,3 +1,11 @@
+/*!
+ * Laravel filemanager - https://github.com/singlequote/laravel-filemanager
+ * Version - 1.0.0
+ * Licensed under the MIT license - https://github.com/singlequote/laravel-filemanager/blob/master/LICENSE.md
+ *
+ * Copyright (c) 2019 SingleQuote
+ */
+
 import FilemanagerTemplate from './template.js';
 import FilemanagerAction from './actions.js';
 import Callback from './callback.js';
@@ -406,10 +414,11 @@ class FileManager
     }
 
     /**
-     * Set folder active
+     * Set folder to active
      * 
-     * @param {type} element
-     * @returns {undefined}
+     * @param {mixed} element
+     * @param {mixed} event
+     * @returns {Boolean}
      */
     clickedFolder(element, event)
     {
@@ -425,9 +434,10 @@ class FileManager
     }
 
     /**
-     * Set file active
+     * Set the file to active
      * 
-     * @param {type} element
+     * @param {mixed} element
+     * @param {mixed} event
      * @returns {undefined}
      */
     clickedFile(element, event)
@@ -438,7 +448,7 @@ class FileManager
         
         element.addClass('activeFile');
         if(element.attr('type') === 'image'){
-            return this.actions.enable('edit', 'delete', 'crop');
+            return this.actions.enable('edit', 'delete', 'crop', 'resize');
         }
         return this.actions.enable('edit', 'delete');
     }
@@ -456,7 +466,7 @@ class FileManager
     /**
      * Set the package dom element
      * 
-     * @type string
+     * @param {string} item
      */
     set package(item)
     {
@@ -516,7 +526,7 @@ class FileManager
     /**
      * Set the callback function
      * 
-     * @type function
+     * @param {function} callback
      */
     set callback(callback)
     {
@@ -528,7 +538,7 @@ class FileManager
      * To use codemirror
      * default true
      * 
-     * @type boolean
+     * @param {boolean} boolean
      */
     set useCodemirror(boolean)
     {

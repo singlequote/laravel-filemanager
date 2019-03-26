@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Image;
 use Storage;
 use Auth;
+use File;
 use Cache;
 /**
  * Init the cart controller
@@ -16,6 +17,20 @@ use Cache;
  */
 class FileManager extends Controller
 {
+    /**
+     * The default cachefolder
+     *
+     */
+    protected $cachefolder = 'cached';
+
+    /**
+     * 
+     */
+    public function __construct()
+    {
+        $this->cachefolder = config('laravel-filemanager.media.hyperlink_path', $this->cachefolder);
+    }
+
 
     /**
      * Init the application
@@ -417,6 +432,7 @@ class FileManager extends Controller
             $route = config('laravel-filemanager.encrypted') ? decrypt($request->route) : $request->route;
             if($request->type === 'file'){
                 Storage::disk($disk)->delete($route);
+                $this->deleteCacheFiles($route);
             }else{
                 Storage::disk($disk)->deleteDirectory($route);
             }
@@ -424,6 +440,30 @@ class FileManager extends Controller
         } catch (Exception $ex) {
             return response()->json(['status' => 'error', 'message' => $ex->getMessage()], 500);
         }
+    }
+
+    /**
+     * Delete the cache files when a file is deleted or edited
+     *
+     * @param string $route
+     * @return boolean
+     */
+    private function deleteCacheFiles(string $route) : bool
+    {
+        $disk       = config('laravel-filemanager.disk');
+        $path       = Storage::disk($disk)->path($route);
+        $filename   = basename($path);
+        $cacheroute = str_before($route, $filename);
+        
+        $files = File::files(public_path("$this->cachefolder/$cacheroute"));
+
+        foreach($files as $file){
+            if(Str::endsWith($file->getFilename(), $filename)){
+                File::delete($file);
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -492,6 +532,30 @@ class FileManager extends Controller
     {
         $slug = str_slug($clientName);
         return str_replace($extension, ".$extension", $slug);
+    }
+
+    
+    public function resize(Request $request)
+    {
+        if(!$request->width || !$request->height){
+            return response("", 204);
+        }
+        
+        $disk = config('laravel-filemanager.disk');
+        $path = Storage::disk($disk)->path($request->path);
+        $img = Image::make($path);
+        
+        $sizes = getimagesize($path);
+
+        $width = (int) $sizes[0] / 100 * (int) $request->scale;
+
+        $img->resize($width, $width);
+
+        $img->save($path);
+
+        $this->deleteCacheFiles($request->path);
+
+        return response()->json(['status' => 'success']);
     }
 
 

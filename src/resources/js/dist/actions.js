@@ -1,5 +1,4 @@
 import Swal from './sweetalert';
-import Dropzone from './dropzone';
 
 /**
  * 
@@ -15,9 +14,10 @@ export default class FilemanagerAction{
         this.parent     = parent;
         this.template   = parent.template;
         this.modal      = parent.modal;
-        this.loadEvents();
+        this.url        = parent.url;
+        this.actions    = ['edit', 'delete', 'crop', 'resize'];
         
-        this.actions    = ['edit', 'delete', 'crop'];
+        this.loadEvents();
     }
     
     /**
@@ -50,6 +50,7 @@ export default class FilemanagerAction{
     /**
      * Load the triggers
      * 
+     * @returns {undefined}
      */
     loadEvents()
     {
@@ -78,6 +79,10 @@ export default class FilemanagerAction{
             e.preventDefault();
             self.crop(e, $(this));
         });
+        $(document).on('click', `[data-action='resize']:not([disabled])`, function (e) {
+            e.preventDefault();
+            self.resize(e, $(this));
+        });
         $(document).on('submit', `${this.parent.doms.modalPreview} .body form`, (e) => {
             e.preventDefault();
             self.submitEditForm(e);
@@ -87,8 +92,8 @@ export default class FilemanagerAction{
     /**
      * Upload new files
      * 
-     * @param {type} event
-     * @param {type} element
+     * @param {mixed} event
+     * @param {mixed} element
      * @returns {undefined}
      */
     upload(event, element)
@@ -97,38 +102,30 @@ export default class FilemanagerAction{
             $(this.parent.doms.modals).html(response);
         });
         this.template.loadTemplate('forms.upload', () => {
+            
            this.modal.show(`#filemanager-media-upload`, {width: '50%'});
+           
             this.template.parseTemplate({
                 _token : this.parent._token,
                 directory : this.parent.addition
             }, 'forms.upload', '#filemanager-media-upload .body');
             
-            var uploadZone = new Dropzone("#action-form", { url: `${this.parent.url}/action/upload` });
-            let self = this;
-            Dropzone.options.fileUploadForm = {
-                init: function () {
-                    this.on("complete", function (file) {
-                        if (this.getUploadingFiles().length === 0 && this.getQueuedFiles().length === 0) {
-                            self.parent.loadContent();
-                        }
-                    });
-                }
-            };
+            setTimeout(() => {
+                this.modal.plugin('dropzone');
+            }, 500);
         });
     }
     
         /**
      * Create a new folder
      * 
+     * @param {mixed} event
+     * @param {mixed} element
      * @returns {undefined}
      */
     create(event, element)
     {
-        
-        this.template.loadTemplate(`modals.modal-preview`, () => {
-            this.template.parseTemplate({header : "Create folder"}, 'modals.modal-preview', this.parent.doms.modals);
-            this.modal.show(this.parent.doms.modalPreview, {width : "40%"});
-        });
+        this.modal.preview(true, {width : "40%"});
         
         this.template.loadTemplate(`forms.create-folder`, () => {
             this.template.parseTemplate({
@@ -142,10 +139,32 @@ export default class FilemanagerAction{
     /**
      * Load plugin cropper
      * 
+     * @param {mixed} event
+     * @param {mixed} element
+     * @returns {undefined}
      */
     crop(event, element)
     {
         this.modal.plugin('cropper', {route : $('.activeFile').data('route'), filename : $('.activeFile').find('.label').html()});        
+    }
+    
+    /**
+     * Resie action plugin
+     * 
+     * @param {mixed} event
+     * @param {mixed} element
+     * @returns {undefined}
+     */
+    resize(event, element)
+    {
+        this.modal.preview();
+        this.template.loadTemplate('forms.resize', () => {
+           this.modal.show(this.parent.doms.modalPreview, {width: '80%'});
+            $.get(`${this.url}?file=${$('.activeFile').data('route')}`, (response) => {               
+                this.template.parseTemplate($.extend( {_token : this.parent._token, url : `${this.url}/action/resize`}, response ), 'forms.resize', this.parent.doms.modalPreview+' .body');
+                this.modal.plugin('resize');
+            });
+        });
     }
     
     /**

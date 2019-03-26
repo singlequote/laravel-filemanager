@@ -1,10 +1,12 @@
-/* 
-    Created on : 25-okt-2018, 12:15:58
-    Author     : Wim Pruiksma
-*/
-@import './dropzone.css';
-@import './animated.css';
-@import './border.scss'; 
+/*!
+ * Laravel filemanager - https://github.com/singlequote/laravel-filemanager
+ * Version - 1.0.0
+ * Licensed under the MIT license - https://github.com/singlequote/laravel-filemanager/blob/master/LICENSE.md
+ *
+ * Copyright (c) 2019 SingleQuote
+ */
+
+
 /*
     COLORS
 */
@@ -12,6 +14,10 @@ $background     : #d8d8d8;
 $text-color     : #0093ff;
 $label-color    :#6d7377;
 $disabled-color : #d8d8d8;
+
+@import './animated.css';
+@import './border.scss'; 
+@import './resize.scss'; 
 
 
 @mixin noselect(){
@@ -376,9 +382,10 @@ $disabled-color : #d8d8d8;
                 overflow:hidden;
                 vertical-align: top;
                 padding: 2px 16px;
-
+                text-align:center;
                 img{
-                    width:100%;
+                    width:auto;
+                    max-width:100%;
                 }
 
             }
