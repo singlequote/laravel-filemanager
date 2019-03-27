@@ -37,7 +37,6 @@ class MediaController extends Controller
         $this->response = $response;
 
         $this->retrieveSizes($file, $height, $width);
-
         if(!$response && $this->checkForCachedFile()){
             return response()->file($this->file);
         }
@@ -177,6 +176,10 @@ class MediaController extends Controller
     {
         $image      = Image::make($path)->orientate();
 
+        if(!$this->height &&  !$this->width){
+            return response()->file($path);
+        }
+
         $height     = $this->height ?? $image->height();
         $width      = $this->width  ?? $image->width();
         $image->{config('laravel-filemanager.media.driver', $this->driver)}($width, $height, function($constraint){
@@ -200,14 +203,14 @@ class MediaController extends Controller
      */
     public function cacheImageResponse(\Intervention\Image\Image $image, string $file, string $filename, int $height = null, int $width = null)
     {
-        $path = public_path("$this->cachefolder/".Str::before($file, $filename));
-        if(!is_dir($path)){
-            mkdir($path, 0577, true);
+        $path = public_path("/$this->cachefolder/".Str::before($file, $filename));
+        if(!is_dir($path)){ 
+            mkdir($path, 0755, true);
         }
-
+ 
         $name = Str::before($filename,'.');
         $extension = Str::after($filename,'.');
-
+ 
         $image->save($path.Str::slug("$height $width $name").".$extension");
     }
 
