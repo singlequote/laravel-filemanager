@@ -55,6 +55,8 @@ return [
         'create_hyperlink' => true,
         //The path starting inside the public folder
         'hyperlink_path' => 'cached',
+        
+        'cache_every_file' => false, //cache every file including image requests without sizes
         /**
          * Set to false if you dont want to use the media
          */
