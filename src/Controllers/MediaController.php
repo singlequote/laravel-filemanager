@@ -85,12 +85,11 @@ class MediaController extends Controller
     {
         $filename = Str::after($this->file, '/');
         $path = public_path("$this->cachefolder/".Str::before($this->file, $filename));
-
-        $height = $this->height ?? "";
-        $width  = $this->width  ?? "";
-
-        if(file_exists("$path$height-$width-$filename")){
-            $this->file = "$path$height-$width-$filename";
+        $height = $this->height ? $this->height."-" : "";
+        $width  = $this->width ? $this->width."-" : "";
+        
+        if(file_exists("$path$height$width$filename")){
+            $this->file = "$path$height$width$filename";
             return true;
         }
 
@@ -131,6 +130,7 @@ class MediaController extends Controller
             return $this->response === 'json' ?
                 $this->imageAsJson($content, $path, $filename, $mimetype) :
                 $this->imageFile($content, $path, $filename);
+            
         }elseif(starts_with($mimetype, 'pdf')){
 
             return $this->pdfFile($content, $path, $filename, $mimetype);
@@ -174,14 +174,14 @@ class MediaController extends Controller
      */
     private function imageFile(string $content, string $path, string $filename)
     {
-        $image      = Image::make($path)->orientate();
-
-        if(!$this->height &&  !$this->width){
+        if(!config('laravel-filemanager.media.cache_every_file', false) && !$this->height &&  !$this->width){
             return response()->file($path);
         }
-
+        
+        $image      = Image::make($path)->orientate();
         $height     = $this->height ?? $image->height();
         $width      = $this->width  ?? $image->width();
+        
         $image->{config('laravel-filemanager.media.driver', $this->driver)}($width, $height, function($constraint){
 
             $constraint->upsize();
@@ -189,8 +189,8 @@ class MediaController extends Controller
 
         })->encode(null, $this->request->get('q', 100));
 
-        if(config('laravel-filemanager.media.create_hyperlink', false) &&  $this->height){
-            $this->cacheImageResponse($image, $this->file, $filename, $height, $width);
+        if(config('laravel-filemanager.media.create_hyperlink', false)){
+            $this->cacheImageResponse($image, $this->file, $filename, $this->height ? $height : null, $this->width ? $width : null);
         }
         return $image->response();
     }
@@ -207,7 +207,7 @@ class MediaController extends Controller
         if(!is_dir($path)){ 
             mkdir($path, 0755, true);
         }
- 
+
         $name = Str::before($filename,'.');
         $extension = Str::after($filename,'.');
  
