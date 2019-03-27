@@ -80,7 +80,7 @@ class FileManager extends Controller
     public function loadConfigs()
     {
         $encrypt       = config('laravel-filemanager.encrypted');
-        $privatePrefix = Auth::check() ? Auth::id() . '/'.config('laravel-filemanager.auth.private_prefix') : "emptyhere";
+        $privatePrefix = Auth::check() ? config('laravel-filemanager.auth.private_prefix').Auth::id() : "emptyhere";
         $sharedprefix  = config('laravel-filemanager.auth.shared_prefix');
         return response()->json([
             'asset'         => asset(''),
