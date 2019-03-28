@@ -37,7 +37,7 @@ class MediaController extends Controller
         $this->response = $response;
 
         $this->retrieveSizes($file, $height, $width);
-        if(!$response && $this->checkForCachedFile()){
+        if(config('laravel-filemanager.media.create_hyperlink', false) && !$response && $this->checkForCachedFile()){
             return response()->file($this->file);
         }
 
