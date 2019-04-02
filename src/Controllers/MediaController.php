@@ -178,7 +178,11 @@ class MediaController extends Controller
             return response()->file($path);
         }
         
-        $image      = Image::make($path)->orientate();
+        try{
+			$image = Image::make($path)->orientate();
+		} catch (\Exception $e) { 		
+			return response()->file($path);
+		}
         $height     = $this->height ?? $image->height();
         $width      = $this->width  ?? $image->width();
         
