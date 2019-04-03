@@ -91,6 +91,7 @@ class FileManager
         this.template   = new FilemanagerTemplate(this);
         this.modal      = new Modal(this);
         this.return     = new Callback(this);
+		this.return.mergeConfig({});
         this.actions    = new FilemanagerAction(this);
     }
     
