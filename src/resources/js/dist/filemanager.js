@@ -10,6 +10,7 @@ import FilemanagerTemplate from './template.js';
 import FilemanagerAction from './actions.js';
 import Callback from './callback.js';
 import Modal from './modal.js';
+import Plugin from './plugins.js';
 
 import Swal from './sweetalert';
 
@@ -51,6 +52,7 @@ class FileManager
             this.url = result.url;
             this.media = result.mediaurl;
             this.config = result;
+            this._token = result.token;
             this.addition = '?folder='+result.root;
             this.asset = result.asset;
             this.booted = true;
@@ -85,6 +87,7 @@ class FileManager
      */
     loadExtendedClasses()
     {
+        this.plugin     = new Plugin(this);
         this.template   = new FilemanagerTemplate(this);
         this.modal      = new Modal(this);
         this.return     = new Callback(this);
@@ -121,7 +124,7 @@ class FileManager
     {
         this.url            = "/filemanager";
         this.media          = "/media";
-        this.addition       = '';
+        this.addition       = '?';
         this._token         = null;
         this.always         = null;
         this.livereload     = false;
@@ -220,7 +223,9 @@ class FileManager
             $(this.doms.content).html(``);
         }
         
-        $.getJSON(`${this.url}/load/content/${this.addition}`, (result) => {
+        let type = this.return.config.type ? `&type=${this.return.config.type}` : '';
+        
+        $.getJSON(`${this.url}/load/content/${this.addition}${type}`, (result) => {
             
             if(result.folders.length === 0 && result.files.length === 0){
                 return this.emptyContent();
@@ -272,18 +277,30 @@ class FileManager
      * @param {type} callback
      * @returns {undefined}
      */
-    window(element, callback = null)
+    window(element, options = {} , callback = null,)
     {
+        let returnas = callback;
+        
+        if(typeof options === 'function'){
+            returnas = options;
+        }
+        
         if(!this.booted){
-            this.message('Oops', 'The package has not been booted! Boot the package before loading the modal', 'error');
+            return this.message('Oops', 'The package has not been booted! Boot the package before loading the modal', 'error');
         }
         if(!$(element).length > 0){
-            this.message('Oops', `Element ${element} can't be found in the dom`, 'error');
+            return this.message('Oops', `Element ${element} can't be found in the dom`, 'error');
         }
+        if(!this._token){
+            return this.message('Oops', `The csrf token is required!`, 'error');
+        }
+        
+        this.return.mergeConfig(options);
+        
         this.insideWindow = true;
         this.doms.package = element;
         this.build();
-        callback();
+        returnas();
         return this.return;
     }  
     
@@ -294,10 +311,12 @@ class FileManager
      * @param {type} callback
      * @returns {undefined}
      */
-    picker(element, callback)
+    picker(element, options = {}, callback = null)
     {
+       
         this.filepicker = true;
-        return this.window(element, callback);
+        
+        return this.window(element, options, callback);
     }
     
     
@@ -407,7 +426,7 @@ class FileManager
                         <a style="color:white;" target="_blank" href="${response.route}">Open original</a>
                     `);
                 }else if(response.type.startsWith('text')){
-                    this.modal.plugin(`codemirror`, response);
+                    this.modal.firePlugin(`codemirror`, response);
                 }
             });
         });
@@ -547,14 +566,14 @@ class FileManager
     
     /**
      * Register a plugin
+     * Wrapper for plugin.register
      * 
-     * @param {type} name
-     * @param {type} config
-     * @returns {undefined}
+     * @param {string} name
+     * @returns {Plugin}
      */
-    registerPlugin(name, config = {})
+    registerPlugin(name)
     {
-        this.modal.addPlugin(name, config);
+        return this.plugin.register(name);
     }
 
     /**

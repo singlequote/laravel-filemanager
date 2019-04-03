@@ -55,7 +55,7 @@
 </div>
 
 <div class='action-button' data-action='resize'>
-    <i data-feather="crop"></i>
+    <i data-feather="maximize-2"></i>
     <span>
         <span>
             <span>Resize</span>

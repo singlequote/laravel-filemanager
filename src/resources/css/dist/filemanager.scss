@@ -280,6 +280,18 @@ $disabled-color : #d8d8d8;
 
 
     }
+    
+    #pick-size{
+        width:100%;
+        display:flex;
+        
+        .size-height, .size-width{
+            width:49%;
+            display:inline-block;
+        }
+        
+    }
+    
 
     #filemanager-content::-webkit-scrollbar {
         width: 5px;
@@ -382,7 +394,7 @@ $disabled-color : #d8d8d8;
                 overflow:hidden;
                 vertical-align: top;
                 padding: 2px 16px;
-                text-align:center;
+                
                 img{
                     width:auto;
                     max-width:100%;

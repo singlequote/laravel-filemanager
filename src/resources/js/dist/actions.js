@@ -55,9 +55,9 @@ export default class FilemanagerAction{
     loadEvents()
     {
         let self = this;
-        $(document).on('click', `[data-action='clear']:not([disabled])`, function (e) {
+        $(document).on('click', `[data-action='clear']:not([disabled])`, (e) => {
             e.preventDefault();
-            $.post(`${self.parent.url}/action/clear`, {_method:'delete', _token : self.parent._token}, () => self.parent.message('cache cleared'));
+            $.post(`${this.url}/action/clear`, {_method:'delete', _token : this.parent._token}, () => this.parent.message('cache cleared'));
         });
         $(document).on('click', `[data-action='upload']:not([disabled])`, function (e) {
             e.preventDefault();
@@ -111,7 +111,7 @@ export default class FilemanagerAction{
             }, 'forms.upload', '#filemanager-media-upload .body');
             
             setTimeout(() => {
-                this.modal.plugin('dropzone');
+                this.modal.firePlugin('dropzone');
             }, 500);
         });
     }
@@ -145,7 +145,7 @@ export default class FilemanagerAction{
      */
     crop(event, element)
     {
-        this.modal.plugin('cropper', {route : $('.activeFile').data('route'), filename : $('.activeFile').find('.label').html()});        
+        this.modal.firePlugin('cropper', {route : $('.activeFile').data('route'), filename : $('.activeFile').find('.label').html()});        
     }
     
     /**
@@ -162,7 +162,7 @@ export default class FilemanagerAction{
            this.modal.show(this.parent.doms.modalPreview, {width: '80%'});
             $.get(`${this.url}?file=${$('.activeFile').data('route')}`, (response) => {               
                 this.template.parseTemplate($.extend( {_token : this.parent._token, url : `${this.url}/action/resize`}, response ), 'forms.resize', this.parent.doms.modalPreview+' .body');
-                this.modal.plugin('resize');
+                this.modal.firePlugin('resize');
             });
         });
     }

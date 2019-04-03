@@ -136,7 +136,13 @@ class MediaController extends Controller
             return $this->pdfFile($content, $path, $filename, $mimetype);
 
         }else{
-
+            if($this->response === 'json'){
+                return response()->json([
+                    'type' => $mimetype,
+                    'filename' => $filename,
+                    'path' => $this->originfile
+                ]);
+            }
             return response()->file($path);
 
         }

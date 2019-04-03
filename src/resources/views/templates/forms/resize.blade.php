@@ -7,13 +7,17 @@
         <input type="hidden" name="height">
         <input type="hidden" name="origin_height">
         <input type="hidden" name="scale">
-
+        Height :<label class="resize-width"></label>
+        Width :<label class="resize-height"></label>
         <button style="float:right" class="button button-blue">Save</button>
     </form>
-
-    <div id="image-resize">
-        Height :<label class="resize-width">500px</label>
-        Width :<label class="resize-height">500px</label>
-        <img lf-attribute="src:route">
+    <div  id="resizer" >
+        <div id="image-resize">
+            <img lf-attribute="src:route">
+        </div>
+        <div id="preview-resize">
+            <div id="preview-frame"></div>
+            <img lf-attribute="src:route">
+        </div>
     </div>
 </div>

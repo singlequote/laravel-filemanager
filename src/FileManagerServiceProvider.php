@@ -28,15 +28,16 @@ class FileManagerServiceProvider extends ServiceProvider
         //publish the styling and scripts
         //php artisan vendor:publish --tag=public --force
         $this->publishes([
-            __DIR__.'/resources/js/filemanager.min.js' => public_path('vendor/laravel-filemanager/js/filemanager.min.js'),
-            __DIR__.'/resources/js/codemirror' => public_path('vendor/laravel-filemanager/js/codemirror'),
-            __DIR__.'/resources/js/cropper' => public_path('vendor/laravel-filemanager/js/cropper'),
-            __DIR__.'/resources/js/dropzone' => public_path('vendor/laravel-filemanager/js/dropzone'),
+            __DIR__.'/resources/js/filemanager.min.js'              => public_path('vendor/laravel-filemanager/js/filemanager.min.js'),
+            __DIR__.'/resources/js/plugins/codemirror'              => public_path('vendor/laravel-filemanager/js/codemirror'),
+            __DIR__.'/resources/js/plugins/cropper'                 => public_path('vendor/laravel-filemanager/js/cropper'),
+            __DIR__.'/resources/js/plugins/dropzone'                => public_path('vendor/laravel-filemanager/js/dropzone'),
+            __DIR__.'/resources/js/plugins/resizer'                  => public_path('vendor/laravel-filemanager/js/resizer'),
 
-            __DIR__.'/resources/css/filemanager.min.css' => public_path('vendor/laravel-filemanager/css/filemanager.min.css'),
-            __DIR__.'/resources/css/codemirror' => public_path('vendor/laravel-filemanager/css/codemirror'),
-            __DIR__.'/resources/css/dropzone' => public_path('vendor/laravel-filemanager/css/dropzone'),
-            __DIR__.'/resources/css/cropper' => public_path('vendor/laravel-filemanager/css/cropper'),
+            __DIR__.'/resources/css/filemanager.min.css'    => public_path('vendor/laravel-filemanager/css/filemanager.min.css'),
+            __DIR__.'/resources/css/plugins/codemirror'             => public_path('vendor/laravel-filemanager/css/codemirror'),
+            __DIR__.'/resources/css/plugins/dropzone'               => public_path('vendor/laravel-filemanager/css/dropzone'),
+            __DIR__.'/resources/css/plugins/cropper'                => public_path('vendor/laravel-filemanager/css/cropper'),
         ], 'public');
 
         
