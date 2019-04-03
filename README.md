@@ -18,10 +18,116 @@ php artisan vendor:publish --tag=view --force
 ```
 
 ### Why use this? 
-Well let me tell you. This package has its own media viewer. This means you can open files in every view wherever you want. Also the media viewer optimizes your images to fit every weird structure you make. And yes the filemanager makes it easy as well! Manage your private files or share it with other users!
+Let's see what kind of cool features this package haves.
+* Media viewer. Viewing files from your storage with laravel always gives you an headache. So the package manages it all for you. You don't even have to use the filemanager to use the media viewer.
+* Fully custimizable. You can publish the views and even the javascript! This gives you the freedom to customize everything.
+* No bootstrap just jquery. Yes i know but jquery makes the code cleaner and easier.
+* Caching. When you parse images using php it's way too slow. Let me fix that for you with this package. This package creates cache files inside your public folder and calls them directly.
+* Cool plugins. Yes there are some default plugins and they are : 
+    * Cropper. Crop / rotate / flip your images with the doka plugin
+    * Resizer. Resize your images with this plugin
+    * Dropzone. Yes this is easy. Upload multiple files easy and fast
+    * Codemirror. This is just awesome. You want to edit your files? No problem, this is an online code editor in your package.
 
+Off Course there are a lot more feutures and awesome stuff. You can try it all.
 
+### How to use
+Let's start with the basics. This package needs a few simple thing to get it all started. The first element needed is HTML.
+This package needs an dom element to parse the views in. By default the package looks for the `#app` element. You can change this below
+```html
+<div id="app"></div>
 
+<!-- Yes these 2 are required! -->
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script type='text/javascript' src='{{asset('vendor/laravel-filemanager/js/filemanager.min.js')}}'></script>
+```
+Now we need to boot the package. 
+```javascript
+//first boot the package. This loads the configs but does not parse the views!
+filemanager.boot();
+//then build the package. This parses the views.
+filemanager.build();
+//You can call this as filemanager.boot().build();
+```
+Thats the basic. Checkout the features below.
+
+#### Methods
+
+*callbacks*
+By default the package uses the feather icons. After the package is parsed you want to load the icons. This can be done with the callback method. This is called everytime you perform an action.
+```javascript
+filemanager.callback = () => {
+    feather.replace(); //this is called evertime you perform an action
+};
+```
+
+*Livereload*
+When multiple users use this package you can activate the live reload method. This reloads your content every few seconds. Don't worry about the performance. The results are cached locally so only new files are requested or when files are deleted.
+```javascript
+filemanager.livereload = true; //default false
+```
+
+#### modals
+Yes you can open this package inside your modals. First boot the package before you open the modal.
+We start with the html
+```html
+<button id="open-modal">Open the filemanager inside a bootstrap modal</button>
+```
+```javascript
+//Boot the package, load the configs etc...
+filemanager.boot();
+//open filemanger inside modal
+$(document).on('click', '#open-modal', () => {
+    //Warning! This only opens the package inside an modal. 
+    //If you want the use it to pick files with, use the picker method instead
+    filemanager.window('.modal-body', () => {
+        $('#popup-modal').modal('show'); //open the bootstrap modal
+    });
+});
+//pick a file from the filemanager
+$(document).on('click', '#open-modal', () => {
+    filemanager.picker('.modal-body', (response) => {
+        $('#popup-modal').modal('show'); //double click a file to return it
+    }).result((response) => {
+        console.log( resonse ); //the file data including the route and path
+    });
+});
+
+```
+The `filemanager.window` expects 3 parameters. 
+* dom element (required)
+* config {} (optional)
+* callback function (optional)
+
+*Filetype*
+If you want to show the users a specific filetype you can pass an option with the filemanager.
+The type option returns all files wich mimetype starts with the given value. For example if you want to return all images.
+```javascript
+//all images
+filemanager.picker('.modal-body', {type : "images"} ,(response) => {...
+//png only
+filemanager.picker('.modal-body', {type : "images/png"} ,(response) => {...
+//jpeg only
+filemanager.picker('.modal-body', {type : "images/jpeg"} ,(response) => {...
+```
+*Sizepicker*
+For example, you want to pick a file and return the image with the deminsion of `300x300` You can uxse the `picksize` option
+This opens an extra modal where you can specify the deminsions you want.
+```javascript
+filemanager.picker('.modal-body', { picksize : true }, (response) => {
+```
+
+[![Image from Gyazo](https://i.gyazo.com/57a4c9a2229fb649ca256f729d1cfb27.png)](https://gyazo.com/57a4c9a2229fb649ca256f729d1cfb27)
+
+[![Image from Gyazo](https://i.gyazo.com/8b7c4638a19a78c6e057f7cf37a7e0f9.png)](https://gyazo.com/8b7c4638a19a78c6e057f7cf37a7e0f9)
+
+[![Image from Gyazo](https://i.gyazo.com/51f474ef22f6ec9ef33e19c91a5e84d2.jpg)](https://gyazo.com/51f474ef22f6ec9ef33e19c91a5e84d2)
+
+[![Image from Gyazo](https://i.gyazo.com/67863033f561bf634ae539a8cc7e8ad4.jpg)](https://gyazo.com/67863033f561bf634ae539a8cc7e8ad4)
+
+[![Image from Gyazo](https://i.gyazo.com/d3a98ef29d0b4a402228026d65fbf4d2.png)](https://gyazo.com/d3a98ef29d0b4a402228026d65fbf4d2)
+
+[![Image from Gyazo](https://i.gyazo.com/249dafbe12b45a76a60a0e2999764ff4.png)](https://gyazo.com/249dafbe12b45a76a60a0e2999764ff4)
 
 ### Changelog
 
