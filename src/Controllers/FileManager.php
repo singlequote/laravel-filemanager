@@ -10,7 +10,7 @@ use Image;
 use Storage;
 use Auth;
 use File;
-
+use Cache;
 /**
  * Init the cart controller
  *
@@ -83,7 +83,6 @@ class FileManager extends Controller
         $privatePrefix = Auth::check() ? config('laravel-filemanager.auth.private_prefix').Auth::id() : "emptyhere";
         $sharedprefix  = config('laravel-filemanager.auth.shared_prefix');
         return response()->json([
-            'token'         => csrf_token(),
             'asset'         => asset(''),
             'root'          => config('laravel-filemanager.auth.private_folder') && \Auth::check() ? $encrypt ? encrypt($privatePrefix) : $privatePrefix : $sharedprefix,
             'url'           => url(config('laravel-filemanager.prefix')),
@@ -118,7 +117,6 @@ class FileManager extends Controller
     public function loadContent(Request $request)
     {
         $view = $request->get('view', 'thumb');
-        $this->request = $request;
         $directory = config('laravel-filemanager.encrypted') ? decrypt($request->folder) : $request->folder;
         $root = $this->isRoot($directory ? $directory : '');
         $previous = $this->getPrevious($directory ? $directory : '');
@@ -231,10 +229,10 @@ class FileManager extends Controller
     {
         $items = $this->addRootItem($root, $directory);
         foreach($files as $file){
+			if($file === "default.png"){
+				continue;
+			}
             $type = Storage::disk(config('laravel-filemanager.disk'))->mimeType($file);
-            if($this->request->filled('type') && !Str::startsWith($type, $this->request->type)){
-                continue;
-            }
             $exploded = explode('/', $type);
             $name = explode('/', $file);
             $src = $this->getFileSource($file, 300);
@@ -435,7 +433,11 @@ class FileManager extends Controller
         try{
             $disk = config('laravel-filemanager.disk');
             $route = config('laravel-filemanager.encrypted') ? decrypt($request->route) : $request->route;
-            if($request->type === 'file'){
+			if(in_array($route, config('laravel-filemanager.protected_folders', []))){
+				return response()->json(['status' => 'error', 'message' => "Folder is protected!"], 500);
+			}
+			
+			if($request->type === 'file'){
                 Storage::disk($disk)->delete($route);
                 $this->deleteCacheFiles($route);
             }else{
@@ -504,38 +506,13 @@ class FileManager extends Controller
     }
 
     /**
-     * Delete the cache folder
      *
      */
     public function clearCache()
     {
         $cache = (new MediaController)->cachefolder;
-        if(is_dir(public_path($cache))){
-            $this->rrmdir(public_path($cache));
-        }
-    }
-
-    /**
-     * Remove a complete folder and its content
-     *
-     * @param string $dir
-     */
-    protected function rrmdir($dir)
-    {
-        if (is_dir($dir)) {
-            $objects = scandir($dir);
-            foreach ($objects as $object) {
-                if ($object != "." && $object != "..") {
-                    if (filetype($dir."/".$object) == "dir"){
-                            $this->rrmdir($dir."/".$object);
-                    }else{
-                        unlink($dir."/".$object);
-                    }
-                }
-            }
-            reset($objects);
-            rmdir($dir);
-        }
+        array_map('unlink', glob(public_path($cache)));
+        Cache::flush();
     }
 
     /**
