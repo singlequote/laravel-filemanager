@@ -20,6 +20,10 @@ return [
      */
     'disk' => 'public',
     /**
+    * Protect certain folder from being deleted.
+    */
+    'protected_folders' => [],    
+    /**
      * Users settings
      */
     'auth' => [
