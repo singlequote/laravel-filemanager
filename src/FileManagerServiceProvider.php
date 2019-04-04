@@ -38,6 +38,7 @@ class FileManagerServiceProvider extends ServiceProvider
             __DIR__.'/resources/css/plugins/codemirror'             => public_path('vendor/laravel-filemanager/css/codemirror'),
             __DIR__.'/resources/css/plugins/dropzone'               => public_path('vendor/laravel-filemanager/css/dropzone'),
             __DIR__.'/resources/css/plugins/cropper'                => public_path('vendor/laravel-filemanager/css/cropper'),
+            __DIR__.'/resources/css/plugins/resizer'                => public_path('vendor/laravel-filemanager/css/resizer')
         ], 'public');
 
         
