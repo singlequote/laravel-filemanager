@@ -67,6 +67,55 @@ When multiple users use this package you can activate the live reload method. Th
 filemanager.livereload = true; //default false
 ```
 
+#### Setters
+If you want to change the default behaviour of the package you can use the setters.
+
+**Change the package dom**
+
+By default the package looks for a dom element with the ID `app`. You can change this.
+```javascript
+filemanager.package = "#app";
+```
+**Change the root**
+It is possible to change the root path where the package should start checking for files. By default it is your drivers location.
+```javascript
+filemanager.root = "news"; //the root folder will be /path/to/your/files/news
+```
+
+**Change the base url**
+By default the package uses the url thats been set in the config file. If you want to change it use the `baseUrl` method
+```javascript
+filemanager.baseUrl = "/filemanager";
+```
+
+**Change the media url**
+By default the package uses the url thats been set in the config file. If you want to change it use the `mediaUrl` method
+```javascript
+filemanager.mediaUrl = "/media";
+```
+
+**Edit dom elements**
+It's not recommended but it is possible to change the dom elements used by the package. For example the package looks for a dom element with the ID `sidebar` to parse the sidebar in. Below are the default dom elements used by the package
+```javascript
+filemanager.sidebar = "#filemanager-sidebar";
+
+filemanager.content = "#filemanager-content";
+```
+
+**Set csrf token**
+Yes the csrf token is required but you don't have to set it when booting up. The package loads the token from the config settings.
+```javascript
+filemanager.token = "{{ csrf_token() }}";
+```
+
+**callback**
+Everytime you perform an action, the callback method is called. For example if you use icons you want them to be parsed everytime you perform an action like reloading the content.
+```javascript
+filemanager.callback = () => {
+     feather.replace(); //load the feather icons
+ };
+```
+
 #### modals
 Yes you can open this package inside your modals. First boot the package before you open the modal.
 We start with the html
