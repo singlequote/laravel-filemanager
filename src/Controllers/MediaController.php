@@ -88,7 +88,7 @@ class MediaController extends Controller
         $height = $this->height ? $this->height."-" : "";
         $width  = $this->width ? $this->width."-" : "";
         
-        if(file_exists("$path$height$width$filename")){
+        if(file_exists("$path$height$width$filename") && is_file("$path$height$width$filename")){
             $this->file = "$path$height$width$filename";
             return true;
         }
