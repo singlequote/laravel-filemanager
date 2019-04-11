@@ -53,7 +53,26 @@ Thats the basic. Checkout the features below.
 
 #### Methods
 
-*callbacks*
+**Plugins**
+
+By default this package uses 4 plugins to handle some actions. Plugins can be heavy and can kill your performance. This package fixes that. The plugins are only loaded when called. It is possible to register your own plugin with the plugin manager build in.
+
+In the example below we use the codemirror default plugin
+```javascript
+this.plugin
+    .register('codemirror') //name of the plugin
+    .setCallback('buildEditor') //This is called when the plugin is loaded and ready
+    .addScript(`/vendor/laravel-filemanager/js/codemirror/config.js`) //add scripts tat are needed for the plugin
+    .addScript(`/vendor/laravel-filemanager/js/codemirror/codemirror.js`)
+    .addScript(`/vendor/laravel-filemanager/js/codemirror/addon/selection/active-line.js`)
+    .addScript(`/vendor/laravel-filemanager/js/codemirror/addon/edit/matchbrackets.js`)
+    .addScript(`/vendor/laravel-filemanager/js/codemirror/mode/javascript/javascript.js`)
+    .addStyle(`/vendor/laravel-filemanager/css/codemirror/codemirror.css`) //add styles for the plugin to work
+    .addStyle(`/vendor/laravel-filemanager/css/codemirror/darcula.css`);
+```
+
+
+**callbacks**
 By default the package uses the feather icons. After the package is parsed you want to load the icons. This can be done with the callback method. This is called everytime you perform an action.
 ```javascript
 filemanager.callback = () => {
@@ -61,7 +80,7 @@ filemanager.callback = () => {
 };
 ```
 
-*Livereload*
+**Livereload**
 When multiple users use this package you can activate the live reload method. This reloads your content every few seconds. Don't worry about the performance. The results are cached locally so only new files are requested or when files are deleted.
 ```javascript
 filemanager.livereload = true; //default false
