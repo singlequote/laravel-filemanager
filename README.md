@@ -12,9 +12,9 @@ You can install the package via composer:
 ```php
 composer require singlequote/laravel-filemanager
 
-php artisan vendor:publish --tag=public --force
-php artisan vendor:publish --tag=config --force
-php artisan vendor:publish --tag=view --force
+php artisan vendor:publish --tag=public
+php artisan vendor:publish --tag=config
+php artisan vendor:publish --tag=view
 ```
 
 ### Why use this? 
