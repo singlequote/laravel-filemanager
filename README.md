@@ -12,16 +12,18 @@ You can install the package via composer:
 ```php
 composer require singlequote/laravel-filemanager
 
-php artisan vendor:publish --tag=public --force
-php artisan vendor:publish --tag=config --force
-php artisan vendor:publish --tag=view --force
+//publish resources
+php artisan vendor:publish --tag=laravel-filemanager-resource
+
+//publish assets
+php artisan vendor:publish --tag=laravel-filemanager-assets
+
+//publish config
+php artisan vendor:publish --tag=laravel-filemanager-config
+
+//publish locale
+php artisan vendor:publish --tag=laravel-filemanager-locale
 ```
-
-### Why use this? 
-Well let me tell you. This package has its own media viewer. This means you can open files in every view wherever you want. Also the media viewer optimizes your images to fit every weird structure you make. And yes the filemanager makes it easy as well! Manage your private files or share it with other users!
-
-
-
 
 ### Changelog
 
@@ -43,7 +45,6 @@ Our address is: ACF Bentveld, Ecu 2 8305 BA, Emmeloord, Netherlands.
 ## Credits
 
 - [Wim Pruiksma](https://github.com/wimurk)
-- [Amando Vledder](https://github.com/AmandoVledder)
 - [All Contributors](../../contributors)
 
 ## License

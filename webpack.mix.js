@@ -1,4 +1,4 @@
-let mix = require('laravel-mix');
+const mix = require('laravel-mix');
 
 /*
  |--------------------------------------------------------------------------
@@ -11,5 +11,8 @@ let mix = require('laravel-mix');
  |
  */
 
-mix.sass('public/vendor/laravel-filemanager/css/dist/filemanager.scss', 'public/vendor/laravel-filemanager/css');
-mix.js('public/vendor/laravel-filemanager/js/dist/filemanager.js', 'public/vendor/laravel-filemanager/js/filemanager.min.js');
+let path = "vendor/singlequote/laravel-filemanager/src/resources/";
+
+mix.sass(`${path}sass/filemanager.scss`  , 'public/vendor/laravel-filemanager/filemanager.min.css');
+mix.js(`${path}js/filemanager.js`        , 'public/vendor/laravel-filemanager/filemanager.min.js');
+

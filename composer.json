@@ -9,7 +9,7 @@
     ],
     "homepage": "https://github.com/singlequote/laravel-filemanager",
     "license": "MIT",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "authors": [
         {
             "name": "Wim Pruiksma",
@@ -21,7 +21,8 @@
     "require": {
         "php": "^7.0",
         "laravel/framework": "5.*",
-        "intervention/image": "^2.4"
+        "intervention/image": "^2.4",
+        "webpatser/laravel-uuid": "^3.0"
     },
     "require-dev": {
         

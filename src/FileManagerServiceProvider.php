@@ -12,40 +12,32 @@ class FileManagerServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //where the routes are
+//        //where the routes are
         $this->loadRoutesFrom(__DIR__.'/routes/laravel-filemanager.php');
-
-        //where the views are
+//
+//        //where the views are
         $this->loadViewsFrom(__DIR__.'/resources/views', 'laravel-filemanager');
 
-        //publish the configs
-        //php artisan vendor:publish --tag=config --force
-        $this->publishes([
-            __DIR__.'/../config/laravel-filemanager.php' => config_path('laravel-filemanager.php')
-        ], 'config');
-
-
-        //publish the styling and scripts
-        //php artisan vendor:publish --tag=public --force
-        $this->publishes([
-            __DIR__.'/resources/js/filemanager.min.js'              => public_path('vendor/laravel-filemanager/js/filemanager.min.js'),
-            __DIR__.'/resources/js/plugins/codemirror'              => public_path('vendor/laravel-filemanager/js/codemirror'),
-            __DIR__.'/resources/js/plugins/cropper'                 => public_path('vendor/laravel-filemanager/js/cropper'),
-            __DIR__.'/resources/js/plugins/dropzone'                => public_path('vendor/laravel-filemanager/js/dropzone'),
-            __DIR__.'/resources/js/plugins/resizer'                  => public_path('vendor/laravel-filemanager/js/resizer'),
-
-            __DIR__.'/resources/css/filemanager.min.css'    => public_path('vendor/laravel-filemanager/css/filemanager.min.css'),
-            __DIR__.'/resources/css/plugins/codemirror'             => public_path('vendor/laravel-filemanager/css/codemirror'),
-            __DIR__.'/resources/css/plugins/dropzone'               => public_path('vendor/laravel-filemanager/css/dropzone'),
-            __DIR__.'/resources/css/plugins/cropper'                => public_path('vendor/laravel-filemanager/css/cropper'),
-        ], 'public');
-
-        
-        //publish the view
-        //php artisan vendor:publish --tag=view --force
+        $this->loadTranslationsFrom(__DIR__.'/resources/lang', 'filemanager');
+//
+        //php artisan vendor:publish --tag=laravel-filemanager
         $this->publishes([
             __DIR__.'/resources/views' => resource_path('views/vendor/laravel-filemanager'),
-        ], 'view');
+            __DIR__.'/resources/images' => public_path('vendor/laravel-filemanager/images'),
+        ], 'laravel-filemanager-resource');
+        
+        $this->publishes([
+            __DIR__.'/../config/laravel-filemanager.php' => config_path('laravel-filemanager.php'),
+        ], 'laravel-filemanager-config');
+        
+        $this->publishes([
+            __DIR__.'/resources/dist/filemanager.min.js' => public_path('vendor/laravel-filemanager/filemanager.min.js'),
+            __DIR__.'/resources/dist/filemanager.min.css'    => public_path('vendor/laravel-filemanager/filemanager.min.css'),
+        ], 'laravel-filemanager-assets');
+        
+        $this->publishes([
+           __DIR__.'/resources/lang' => resource_path('lang/vendor/laravel-filemanager/'),
+        ], 'laravel-filemanager-locale');
     }
 
     /**
