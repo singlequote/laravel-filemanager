@@ -366,10 +366,16 @@ class FileManager
             $.getScript('https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js', () =>{
                 feather.replace();
             });
+        }
+        
+        if (typeof jQuery.ui === "undefined"){
             $.getScript('https://code.jquery.com/ui/1.12.1/jquery-ui.js', () =>{
                 callback();
             });
+        }else{
+            callback();
         }
+        
     }
     
     /**
