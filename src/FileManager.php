@@ -16,8 +16,9 @@ class FileManager {
      *
      */
     public function __construct() {
-        $this->css = asset("vendor/laravel-filemanager/filemanager.min.css");
-        $this->script = asset("vendor/laravel-filemanager/filemanager.min.js");
+        $this->assetPath = "vendor/laravel-filemanager/";
+        $this->css = file_exists(public_path("{$this->assetPath}filemanager.min.css")) ? asset("{$this->assetPath}filemanager.min.css") : false;
+        $this->script = file_exists(public_path("{$this->assetPath}filemanager.min.js")) ? asset("{$this->assetPath}filemanager.min.js") : false;
         $this->userModel = config('auth.providers.users.model');
     }
 
@@ -47,12 +48,12 @@ class FileManager {
         }
 
         return view('laravel-filemanager::index')->with([
-                    'activeDrive' => $activeDriver,
-                    'css' => $this->css,
-                    'script' => $this->script,
-                    'myDrive' => $this->myDrive,
-                    'sharedDrive' => $this->sharedDrive,
-                    'publicDrive' => $this->publicDrive
+            'activeDrive' => $activeDriver,
+            'css' => $this->css ? $this->css : route(config('laravel-filemanager.prefix'))."/laravel-datatables.css",
+            'script' => $this->script ? $this->script : route(config('laravel-filemanager.prefix'))."/laravel-datatables.js",
+            'myDrive' => $this->myDrive,
+            'sharedDrive' => $this->sharedDrive,
+            'publicDrive' => $this->publicDrive
         ]);
     }
 
@@ -406,7 +407,6 @@ class FileManager {
         $config = $this->getFileConfig($request);
 
         if ($config) {
-//            unset($config->basepath);
 
             $config->uploader = isset($config->uploader) ? $config->uploader->name : false;
             $config->shared = isset($config->shared) ? true : false;
@@ -486,9 +486,9 @@ class FileManager {
         $id = Uuid::generate();
         $path = $this->getPathByDrive($request);
 
-        $folderPath = $this->parseUrl($this->config('path') . "/$path/$id");
+        $folderPath = $this->parseUrl("$path/$id");
 
-        Storage::disk($this->config('disk', 'local'))->makeDirectory($folderPath);
+        Storage::disk($this->config('disk', 'local'))->makeDirectory("{$this->config('path')}/$folderPath");
 
         $data = [
             'basepath' => $this->parseUrl($folderPath),
@@ -500,7 +500,7 @@ class FileManager {
             'updated_at' => now()->format('Y-m-d H:i:s')
         ];
 
-        Storage::disk($this->config('disk', 'local'))->put("$folderPath.fmc", json_encode($data));
+        Storage::disk($this->config('disk', 'local'))->put("{$this->config('path')}/$folderPath.fmc", json_encode($data));
 
         return response("", 204);
     }
@@ -616,5 +616,31 @@ class FileManager {
             $this->writeFileConfig($file);
         }
     }
-
+    
+    /**
+     * Get the required script
+     * 
+     * @return \Illuminate\Contracts\Routing\ResponseFactory
+     */
+    public function getScript()
+    {
+        $contents = file_get_contents(base_path('vendor/singlequote/laravel-filemanager/src/resources/dist/filemanager.min.js'));
+        $response = \Response::make($contents, 200);
+        $response->header('Content-Type', 'application/javascript');
+        return $response;
+    }
+    
+    /**
+     * Get the stylesheet
+     * 
+     * @return \Illuminate\Contracts\Routing\ResponseFactory
+     */
+    public function getStyle()
+    {
+        $contents = file_get_contents(base_path('vendor/singlequote/laravel-filemanager/src/resources/dist/filemanager.min.css'));
+        $response = \Response::make($contents, 200);
+        $response->header('Content-Type', 'text/css');
+        return $response;
+    }
+    
 }

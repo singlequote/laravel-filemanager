@@ -18,6 +18,10 @@ Route::group(['prefix' => config('laravel-filemanager.prefix'), 'middleware' => 
     Route::post('share/content'         , '\SingleQuote\FileManager\FileManager@shareContent');
     
     Route::put('rename/file'            , '\SingleQuote\FileManager\FileManager@renameFile');
+    
+    
+    Route::get('laravel-datatables.js'  , '\SingleQuote\FileManager\FileManager@getScript');
+    Route::get('laravel-datatables.css'  , '\SingleQuote\FileManager\FileManager@getStyle');
 });
 
 /**

@@ -23,6 +23,9 @@ php artisan vendor:publish --tag=laravel-filemanager-config
 
 //publish locale
 php artisan vendor:publish --tag=laravel-filemanager-locale
+
+//publish images for file extensions
+php artisan vendor:publish --tag=laravel-filemanager-images
 ```
 
 ### Changelog

@@ -23,7 +23,6 @@ class FileManagerServiceProvider extends ServiceProvider
         //php artisan vendor:publish --tag=laravel-filemanager
         $this->publishes([
             __DIR__.'/resources/views' => resource_path('views/vendor/laravel-filemanager'),
-            __DIR__.'/resources/images' => public_path('vendor/laravel-filemanager/images'),
         ], 'laravel-filemanager-resource');
         
         $this->publishes([
@@ -38,6 +37,10 @@ class FileManagerServiceProvider extends ServiceProvider
         $this->publishes([
            __DIR__.'/resources/lang' => resource_path('lang/vendor/laravel-filemanager/'),
         ], 'laravel-filemanager-locale');
+        
+        $this->publishes([
+           __DIR__.'/resources/images' => public_path('vendor/laravel-filemanager/images'),
+        ], 'laravel-filemanager-images');
     }
 
     /**
