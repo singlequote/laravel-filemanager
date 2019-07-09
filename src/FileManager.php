@@ -131,7 +131,8 @@ class FileManager
      * @param Request $request
      * @return string
      */
-    private function setActiveDriver(Request $request) {
+    private function setActiveDriver(Request $request) 
+    {
         $default = $this->myDrive ? 'drive' : false;
 
         if (!$default) {
@@ -146,7 +147,8 @@ class FileManager
      * 
      * @return \Illuminate\Http\JsonResponse
      */
-    public function loadConfigurations() {
+    public function loadConfigurations()
+    {
         return response()->json([
             "_token" => csrf_token(),
             "mediaUrl" => route($this->config("media.prefix", "media"), ""),
@@ -187,8 +189,8 @@ class FileManager
      */
     public function loadDrive(Request $request, string $driver = "")
     {
-        if (!$request->user() || !$this->myDrive) {
-            return $this->loadPublic();
+        if ((!$request->user() || !$this->myDrive) && $driver === 'my drive') {
+            return $this->loadDrive($request, 'public drive');
         }
         
         $path = $this->getPathByDrive($request);
@@ -388,7 +390,8 @@ class FileManager
      * @param string $url
      * @return string
      */
-    public function parseUrl(string $url, $withoutDriver = false) {
+    public function parseUrl(string $url, $withoutDriver = false) 
+    {
         if ($withoutDriver) {
             $url = str_replace(['drive', 'public', 'shared'], '', $url);
         }
