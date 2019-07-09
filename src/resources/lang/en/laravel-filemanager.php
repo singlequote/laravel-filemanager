@@ -32,5 +32,10 @@ return [
     "share file" => "Share file",
     'share folder' => "Share folder",
     "shared drive" => "Shared drive",
-    "or anyone with this link" => "Or anyone with this link"
+    "or anyone with this link" => "Or anyone with this link",
+    "load more" => "Load more results",
+    "storage" => "Storage",
+    "name" => "Name",
+    "shared with" => "Shared with",
+    "remove the shared links" => "Remove the shared links"
 ];

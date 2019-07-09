@@ -3,25 +3,31 @@ Route::group(['prefix' => config('laravel-filemanager.prefix'), 'middleware' => 
 
 
     Route::get('/'                      , '\SingleQuote\FileManager\FileManager@index')->name(config('laravel-filemanager.prefix'));
-    Route::get('config'                 , '\SingleQuote\FileManager\FileManager@getConfig');
+    Route::get('/modal'                 , '\SingleQuote\FileManager\FileManager@modal')->name(config('laravel-filemanager.prefix').".modal");
+    Route::get('config'                 , '\SingleQuote\FileManager\FileManager@loadConfigurations');
     Route::get('load/content'           , '\SingleQuote\FileManager\FileManager@loadContent');
     
-    Route::post('upload/files'          , '\SingleQuote\FileManager\FileManager@uploadFiles');
     
-    Route::post('create/folder'          , '\SingleQuote\FileManager\FileManager@createFolder');
+    Route::get('get/folders'            , '\SingleQuote\FileManager\FileManager@getFolders');
+    Route::put('rename/folder'          , '\SingleQuote\FileManager\Controllers\FoldersController@rename');
+    Route::post('create/folder'         , '\SingleQuote\FileManager\Controllers\FoldersController@create');
+    Route::post('details/folder'        , '\SingleQuote\FileManager\Controllers\FoldersController@details');
+    Route::delete('delete/folder'       , '\SingleQuote\FileManager\Controllers\FoldersController@delete');
     
-    Route::delete('delete/file'         , '\SingleQuote\FileManager\FileManager@deleteFile');
-    Route::delete('delete/folder'       , '\SingleQuote\FileManager\FileManager@deleteFolder');
+    Route::get('get/files'              , '\SingleQuote\FileManager\FileManager@getFiles');
+    Route::put('rename/file'            , '\SingleQuote\FileManager\Controllers\FilesController@rename');
+    Route::post('upload/files'          , '\SingleQuote\FileManager\Controllers\FilesController@upload');
+    Route::post('details/file'          , '\SingleQuote\FileManager\Controllers\FilesController@details');
+    Route::delete('delete/file'         , '\SingleQuote\FileManager\Controllers\FilesController@delete');
     
-    Route::post('details/file'          , '\SingleQuote\FileManager\FileManager@detailsFile');
     
-    Route::post('share/content'         , '\SingleQuote\FileManager\FileManager@shareContent');
     
-    Route::put('rename/file'            , '\SingleQuote\FileManager\FileManager@renameFile');
-    
+    Route::post('share/file'         , '\SingleQuote\FileManager\Controllers\ShareController@file');
+    Route::post('share/folder'       , '\SingleQuote\FileManager\Controllers\ShareController@folder');
+    Route::delete('shared'           , '\SingleQuote\FileManager\Controllers\ShareController@delete');
     
     Route::get('laravel-datatables.js'  , '\SingleQuote\FileManager\FileManager@getScript');
-    Route::get('laravel-datatables.css'  , '\SingleQuote\FileManager\FileManager@getStyle');
+    Route::get('laravel-datatables.css' , '\SingleQuote\FileManager\FileManager@getStyle');
 });
 
 /**

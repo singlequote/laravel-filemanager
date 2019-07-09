@@ -15,7 +15,6 @@
 
         @includeIf('laravel-filemanager::package')
 
-
         <script src="{{ $script }}"></script>
     </body>
 </html>

@@ -179,3 +179,73 @@
         transform: rotate(360deg);
     }
 }
+
+// Animation =============================================
+// Edit these at random intervals to change the animation.
+@keyframes loader {
+
+    0% {
+        width: 0;
+    }
+
+    20% {
+        width: 10%;
+    }
+
+    25% {
+        width: 24%;
+    }
+
+    43% {
+        width: 41%;
+    }
+
+    56% {
+        width: 50%;
+    }
+
+    66% {
+        width: 52%;
+    }
+
+    71% {
+        width: 60%;
+    }
+
+    75% {
+        width: 76%;
+
+    }
+
+    94% {
+        width: 86%;
+    }
+
+    100% {
+        width: 100%;
+    }
+
+}
+
+// Bar ============================================
+.progress-bars {
+    overflow: hidden;
+    width: 100%;
+    
+    span {
+        display: block;
+    }
+}
+
+.bars {
+    background: $gray-300;
+}
+
+.bar-progress {
+    /*animation: loader 8s ease;*/
+    // Change the animation fill mode 'infinite' to 'forwards' to stop the animation from repeating.
+    background: $blue;
+    color: $white;
+    padding: 4px 0px;
+    width: 0px;
+}

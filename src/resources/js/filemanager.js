@@ -3,7 +3,10 @@ if(typeof $ === "undefined"){
 }
 
 import contextMenu from './contextual';
-import ContentBox from './contentBox';
+import Box from './box';
+import FileController from './fileController';
+import FolderController from './folderController';
+import ShareController from './shareController';
 
 /**
  * FIlemanager class for laravel
@@ -20,12 +23,23 @@ class FileManager
     {
         this.currentPath;
         
-        ContentBox.loader = this.loader();
+        
+        this.pageFolders = 1;
+        this.pageFiles = 1;
         
         this.loadRequiredPlugins(() => {
             this.setElements();
+            this.modal = this.domPackage.data('modal');
+
             this.loadConfig(() => {
-                this.build();
+                this.build(() => {
+                    this.box    = new Box(this);
+                    this.file   = new FileController(this);
+                    this.share  = new ShareController(this);
+                    this.folder = new FolderController(this);
+                                        
+                    this.replaceSize();
+                });
             });
         });
     }
@@ -35,8 +49,12 @@ class FileManager
      * 
      * @returns {undefined}
      */
-    build()
+    build(callback = false)
     {
+        if($('#package-filemanager').length === 0){
+            return false;
+        }
+        
         $('#package-filemanager').disableSelection();
         if($('.sidebar-button.active').length === 0){
             $('.sidebar-button').first().addClass('active');
@@ -45,6 +63,23 @@ class FileManager
         this.loadContent();
         this.loadContextMenus();
         this.loadTriggers();
+        
+        if(callback){
+            callback();
+        }
+    }
+    
+    /**
+     * Check the sizes of the grid layout
+     * 
+     * @returns {undefined}
+     */
+    checkSizes()
+    {
+        if(this.modal){
+            this.domContent.find('.files').css('grid-template-columns', 'repeat(4, 25%)');
+            this.domContent.find('.folders').css('grid-template-columns', 'repeat(4, 25%)');
+        }
     }
         
     /**
@@ -67,24 +102,71 @@ class FileManager
      */
     loadTriggers()
     {
-        $(document).on('submit', '#renameContent', (e) => { this.submitRenameContent(e); });
-        $(document).on('submit', '#addFolder', (e) => { this.submitAddFolder(e); });
-        $(document).on('submit', '#shareContent', (e) => { this.submitShareContent(e); });
-        
-        $(document).on('change', 'input[type="file"].filemanager-files', (e) => { this.uploadFiles(e); });
-        
+        //Change the driver
         $(document).on('click', '#package-filemanager .sidebar-button.drive', (e) => { this.changeDrive(e); });
-        $(document).on('click', '#package-content .file, #package-content .folder', (e) => { this.clickFile(e); });
+        
+        //Change the active folder and reload the content
         $(document).on('click', '#package-content .breadcrumb li a', (e) => {
             e.preventDefault();
             let element = $(e.currentTarget);
             this.loadContent(this.setUrl('load/content', element.attr('href')));
         });
-                
-        $(document).on('click', '.selectOnClick', (e) => {   this.copyToClipboard(e.currentTarget); });
-                
-        $(document).on('dblclick', '#package-content .file, #package-content .folder', (e) => { this.doubleClickFile(e); });
         
+        //Reload the disk size
+        $(document).on('click', '#diskSize', () => {
+            this.reloadDiskSize();
+        });
+                
+//        $(document).on('submit', '#renameContent', (e) => { this.submitRenameContent(e); });
+//        $(document).on('submit', '#addFolder', (e) => { this.submitAddFolder(e); });
+//        $(document).on('submit', '#shareContent', (e) => { this.submitShareContent(e); });
+        
+
+//                
+//        $(document).on('click', '.selectOnClick', (e) => {   this.copyToClipboard(e.currentTarget); });
+//        
+//        $(document).on('click', '.load-more', (e) => {  
+//            let type = $(e.currentTarget).data('type');
+//            $(e.currentTarget).remove();
+//            if(type === 'files'){
+//                this.pageFiles = this.pageFiles + 1;
+//                this.loadFiles(() => {
+//                    this.setContentPlugins();
+//                });
+//            }else{
+//                this.pageFolders = this.pageFolders + 1;
+//                this.loadFolders(() => {
+//                    this.setContentPlugins();
+//                });
+//            }
+//        });
+        
+        
+    }
+    
+    /**
+     * Replace sizes to readable sizes
+     * 
+     * @returns {undefined}
+     */
+    replaceSize()
+    {
+        $('.size').each((i, size) => {
+            $(size).removeClass('size').html(this.formatBytes($(size).html()));
+        });
+    }
+    
+    /**
+     * Reload the disk size
+     * 
+     * @returns {undefined}
+     */
+    reloadDiskSize()
+    {
+        $(`.diskSize`).load(`${this.url(``)} #diskSize`, () => {
+            this.replaceSize();
+            feather.replace();
+        });
     }
     
     /**
@@ -134,29 +216,32 @@ class FileManager
                     name: this.trans('rename'),
                     icon: `edit`,
                     callback : (e) => {
-                        this.renameContent(e);
+                        let type = $(e.currentTarget).hasClass('file') ? 'file' : 'folder';
+                        $(e.currentTarget).trigger(`${type}:edit`);
                     }
                 },
                 {
                     name: this.trans('details'),
                     icon: `clipboard`,
                     callback : (e) => {
-                        this.getContentDetails(e);
+                        let type = $(e.currentTarget).hasClass('file') ? 'file' : 'folder';
+                        $(e.currentTarget).trigger(`${type}:details`);
                     }
                 },
                 {
                     name: this.trans('share'),
                     icon: `share-2`,
                     callback : (e) => {
-                        this.shareContent(e);
+                        let type = $(e.currentTarget).hasClass('file') ? 'file' : 'folder';
+                        $(e.currentTarget).trigger(`${type}:share`);
                     }
                 },
                 {
                     name: this.trans('delete'),
                     icon: `trash`,
                     callback : (e) => {
-                        $(e.currentTarget).addClass('active');
-                        this.deleteContent();
+                        let type = $(e.currentTarget).hasClass('file') ? 'file' : 'folder';
+                        $(e.currentTarget).trigger(`${type}:delete`);
                     }
                 }
                 
@@ -171,186 +256,17 @@ class FileManager
                     name: this.trans('upload files'),
                     icon: `upload`,
                     callback : () => {
-                        this.showUploadDialog();
+                        $(document).trigger('file:upload');
                     }
                 },{
                     name: this.trans('new folder'),
                     icon: `folder-plus`,
                     callback : (e, menu, position) => {
-                        this.showCreateFolderDialog(position);
+                        $(document).trigger('folder:create');
                     }
                 }
             ]
             
-        });
-    }
-    
-    /**
-     * Delete selected content
-     * 
-     * @param {type} e
-     * @returns {undefined}
-     */
-    deleteContent()
-    {
-        $(`#package-content .file.active, #package-content .folder.active`).each((index, active) => {
-            let element = $(active);
-            let url = element.hasClass('folder') ? this.url('delete/folder') : this.url('delete/file');
-
-            $.post(url, {_method:"delete", _token : this.config._token, item : element.data('id')}, () => {
-                element.hide('slow', () => {
-                    element.remove();
-                });
-            });
-        });
-    }
-    
-    /**
-     * Show the dialog for renaming content
-     * 
-     * @param {type} e
-     * @returns {undefined}
-     */
-    renameContent(e)
-    {   
-        let element = $(e.currentTarget);
-
-        ContentBox.header = `<b>${this.trans('rename')}</b> ${element.find('.label').html()}`;
-                
-        ContentBox.show(element);
-        
-        $.post(this.url('details/file'), {_token : this.config._token, item : element.data('id')}, (response) => {
-            ContentBox.content = `
-                <form id="renameContent">
-                    <input type="hidden" name="item" value="${response.id}">
-                    <label>${this.trans('filename')}</label>
-                    <input type="text" name="rename" data-id="${element.data('id')}" value="${response.filename}" />
-                    <button class="cancel button button-default button-small" type="button">${this.trans('cancel')}</button>
-                    <button class="button button-green button-small">${this.trans('rename')}</button>
-                </form>
-            `;
-        });
-    }
-    
-    /**
-     * Submit the new filename
-     * 
-     * @param {type} e
-     * @returns {undefined}
-     */
-    submitRenameContent(e)
-    {
-        e.preventDefault();
-        
-        let data = {
-            _token: this.config._token,
-            _method: "put",
-            item: $(e.currentTarget).find('input[name="item"]').val(),
-            rename: $(e.currentTarget).find('input[name="rename"]').val()
-        };
-        
-        $.post(this.url('rename/file'), data, (response) => {
-           $(`[data-id="${response.id}"]`).find('.label').html(response.filename);
-           ContentBox.hide();
-        });
-    }
-    
-    /**
-     * Get the content info off the file
-     * 
-     * @param {type} e
-     * @returns {undefined}
-     */
-    getContentDetails(e)
-    {
-        let element = $(e.currentTarget);
-        
-        ContentBox.show(element, {height : 380});
-        
-        $.post(this.url('details/file'), {_token : this.config._token, item : element.data('id')}, (response) => {
-            
-            ContentBox.header = response.filename;
-            
-            ContentBox.content = `
-                <table class="table filemanager-table">
-                    <tr>
-                        <td>${this.trans('filename')}</td>
-                        <td>${response.filename}</td>
-                    </tr>
-                    <tr>
-                        <td>${this.trans('extension')}</td>
-                        <td>${response.extension}</td>
-                    </tr>
-                    <tr>
-                        <td>${this.trans('size')}</td>
-                        <td>${this.formatBytes(response.size)}</td>
-                    </tr>
-                    <tr>
-                        <td>${this.trans('mimetype')}</td>
-                        <td>${response.mimetype}</td>
-                    </tr>
-                    <tr>
-                        <td>${this.trans('created at')}</td>
-                        <td>${response.created_at}</td>
-                    </tr>
-                    <tr>
-                        <td>${this.trans('last updated')}</td>
-                        <td>${response.updated_at}</td>
-                    </tr>
-                    <tr>
-                        <td>${this.trans('uploader')}</td>
-                        <td>${response.uploader ? response.uploader : this.trans('unknown')}</td>
-                    </tr>
-                </table>
-            `;
-        });
-    }
-    
-    shareContent(e)
-    {
-        let element = $(e.currentTarget);
-        let type = element.hasClass('folder') ? 'folder' : 'file';
-        ContentBox.show(element, {height:400});
-        ContentBox.header = `${this.trans('share '+type)}`;
-        
-        $.post(this.url('details/file'), {_token : this.config._token, item : element.data('id'), type : type}, (response) => {
-            
-            ContentBox.content = `
-                <form id="shareContent">
-                    <input type="hidden" name="item" value="${response.id}">
-                    <input type="hidden" name="type" value="${type}">
-                    <label>${this.trans('enter email of the user(s)')}</label>
-                    <input autocomplete="off" type="text" name="email" />
-                    <button class="cancel button button-default button-small" type="button">${this.trans('cancel')}</button>
-                    <button class="button button-green button-small">${this.trans('share')}</button>
-                    <br><br>
-                    ${this.trans('or anyone with this link')}<br><br>
-                    <span class="selectOnClick">${this.config.mediaUrl}/${response.basepath}</span>
-                </form>
-            `;            
-        });
-    } 
-    
-    /**
-     * Submit and psot the shared files and folders
-     * 
-     * @param {type} e
-     * @returns {undefined}
-     */
-    submitShareContent(e)
-    {
-        e.preventDefault();
-        
-        let data = {
-            _token: this.config._token,
-            item: $(e.currentTarget).find('input[name="item"]').val(),
-            type: $(e.currentTarget).find('input[name="type"]').val(),
-            email: $(e.currentTarget).find('input[name="email"]').val()
-        };
-        
-        $.post(this.url('share/content'), data, (response) => {
-            ContentBox.hide();
-            this.loadContent();
         });
     }
     
@@ -386,156 +302,83 @@ class FileManager
     loadContent(setUrl = false)
     {       
         let url = setUrl ? setUrl : this.url(`load/content`);
-
+        this.pageFolders = 1;
+        this.pageFiles = 1;
         this.domContent.html(this.loader());
-        
         $.get(url, (response) => {
+            
             this.domContent.html(response);
-            $('.nu-context-menu').not(':first').remove();
-            feather.replace();
-            
-            $('#package-content .files').selectable({
-                filter: ".file,.folder",
-                cancel: ".file,.folder",
-                start : () => {
-                    $(document).trigger('click');
-                },
-                classes: {
-                    "ui-selected": "active"
-                }
+            this.loadFolders(() => {
+                this.loadFiles(() => {
+                    this.setContentPlugins();
+                });
             });
             
         });
     }
     
     /**
-     * Upload the selected files
+     * Load the folders
      * 
-     * @param {type} e
      * @returns {undefined}
      */
-    uploadFiles(e)
+    loadFolders(callback = null)
     {
-        let element = $(e.currentTarget);
-        $(`#package-content .uploader`).remove();
-        $('#package-content').append(`
-            <div class="uploader">
-                <div class="header">
-                    ${element[0].files.length} ${this.trans('files uploading')}
-                </div>
-                <div class="uploads"></div>
-            </div>
-        `);
+        this.domPackage.find('.folders').append(this.loader());
         
-        $.each(element[0].files, (index, file) => {
-            let id = this.unique();
-            $('#package-content .uploader .uploads').append(`
-                <div class="file-list" data-id="${id}"><div class="file-name">${file.name} | ${file.type}</div><div class="file-progress">0 %</div></div>
-            `);
-                        
-            let fd = new FormData(); 
-            fd.append('file', file); 
-            fd.append('_token', this.config._token);
-            
-            $.ajax({
-                url: this.url('upload/files'),
-                type: 'post',
-                data: fd,
-                contentType: false,
-                processData: false,
-                xhr: function() {
-                    let xhr = $.ajaxSettings.xhr();
-                    xhr.upload.onprogress = function(e) {                       
-                        $(`div[data-id="${id}"] .file-progress`).html(Math.floor(e.loaded / e.total *100) + '%');
-                    };
-                    return xhr;
-                },
-                success: (response) => {
-                    if(index === (element[0].files.length - 1)){
-                        this.loadContent();
-                    }
-                }
-            });
-        });        
-    }
-    
-    /**
-     * Set the file to be selected
-     * 
-     * @param {type} e
-     * @returns {undefined}
-     */
-    clickFile(e)
-    {
-        if(!e.ctrlKey){
-            $('#package-content .file, #package-content .folder').removeClass('active');
-        }
-        let element = $(e.currentTarget);
-        element.toggleClass('active');
-    }
-    
-    /**
-     * DOuble click file or folder
-     * 
-     * @param {type} e
-     * @returns {Boolean}
-     */
-    doubleClickFile(e)
-    {
-        let element = $(e.currentTarget);
-        
-        if(element.hasClass('folder')){
-            let path = element.data('slug');
-            this.loadContent(this.setUrl('load/content', path));
-            return true;
-        }
-    }
-    
-    /**
-     * Show to dailog to create a new folder
-     * 
-     * @param {type} position
-     * @returns {undefined}
-     */
-    showCreateFolderDialog(position)
-    {
-        
-        ContentBox.header = `${this.trans('add folder')}`;
-        ContentBox.show();
-        ContentBox.content = `
-            <form id="addFolder">
-                <label>${this.trans('folder name')}</label>
-                <input autocomplete="off" type="text" name="name" />
-                <button class="cancel button button-default button-small" type="button">${this.trans('cancel')}</button>
-                <button class="button button-green button-small">${this.trans('add folder')}</button>
-            </form>
-        `;
-    }
-    
-    /**
-     * Submit to add a new folder
-     * 
-     * @param {type} e
-     * @returns {undefined}
-     */
-    submitAddFolder(e)
-    {
-        e.preventDefault();
-        
-        let data = {
-            _token: this.config._token,
-            name: $(e.currentTarget).find('input[name="name"]').val()
-        };
-        
-        $.post(this.url('create/folder'), data, () => {
-            ContentBox.hide();
-            this.loadContent();
+        $.get(this.url('get/folders'), (response) => {
+           this.domPackage.find('.folders').append(response); 
+           $('.folders .breeding-rhombus-spinner').remove();
+           this.checkSizes();
+           if(callback){
+               return callback();
+           }
         });
     }
-        
     
     /**
-     * Set the important dom elements
+     * Load the files
+     * 
+     * @returns {undefined}
+     */
+    loadFiles(callback = null)
+    {
+        this.domPackage.find('.files').append(this.loader());
+        $.get(this.url('get/files'), (response) => {
+           this.domPackage.find('.files').append(response); 
+           $('.files .breeding-rhombus-spinner').remove();
+           this.checkSizes();
+           if(callback){
+               return callback();
+           }
+        });
+    }
+    
+    /**
+     * Set the plugins when the content is loaded
+     * 
+     * @returns {undefined}
+     */
+    setContentPlugins()
+    {
+        $('.nu-context-menu').not(':first').remove();
+        
+        feather.replace();
+
+        $('#package-content .files').selectable({
+            filter: ".file,.folder,.load-more",
+            cancel: ".file,.folder,.load-more",
+            start : () => {
+                $(document).trigger('click');
+            },
+            classes: {
+                "ui-selected": "active"
+            }
+        });
+    }        
+    
+    /**
+     * Set the required dom elements
      * 
      * @returns {undefined}
      */
@@ -548,8 +391,11 @@ class FileManager
     }
     
     /**
-     * Set the Url
+     * Returns the full url
      * 
+     * @param {type} path
+     * @param {type} addition
+     * @returns {String}
      */
     url(path, addition = false)
     {     
@@ -557,15 +403,15 @@ class FileManager
         
         this.currentPath = addition ? currentPath+"/"+addition : currentPath;
         
-        let url = location.href.replace('#!', '').replace('#', '');
-
+        let url = this.domPackage.data('url') ? this.domPackage.data('url') : location.href;
+        
         let split = url.split('?');
         
-        url = `${split[0]}/${path}${split.length > 1 ? `?${split[1]}` : ``}`
+        url = `${split[0]}/${path}${split.length > 1 ? `?${split[1]}` : ``}`;
 
         let mark = url.includes('?') ? '&' : '?';
                 
-        return `${url}${mark}path=${this.currentPath}`;
+        return `${url}${mark}path=${this.currentPath}&pageFolders=${this.pageFolders}&pageFiles=${this.pageFiles}`;
     }
     
     /**
@@ -578,9 +424,10 @@ class FileManager
     setUrl(path, addition = false)
     {
         this.currentPath = $('.sidebar-button.active').data('slug');
+        
         return this.url(path, addition);
     }
-
+    
     /**
      * Return a new loader
      * 
@@ -612,24 +459,6 @@ class FileManager
             return this.config.trans[key];
         }
         return key;
-    }
-    
-    /**
-     * Trigger the upload dialog
-     * 
-     * @returns {undefined}
-     */
-    showUploadDialog()
-    {
-        $('.filemanager-upload-filedialog').remove();
-        let id = this.unique();
-        $(`body`).append(`
-            <form style="display:none;" class="filemanager-upload-filedialog" id="${id}">
-                <input class="filemanager-files" data-id="${id}" type="file" name="files" multiple>
-            </form>
-        `);
-        
-        $(`#${id}`).find('input[type="file"]').trigger('click');
     }
     
     /**
@@ -670,5 +499,6 @@ class FileManager
     
 }
 
+window.FileManager = new FileManager;
 
-window.filemanager = new FileManager;
+export default FileManager;

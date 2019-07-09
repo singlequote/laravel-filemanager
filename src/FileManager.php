@@ -2,26 +2,54 @@
 
 namespace SingleQuote\FileManager;
 
+use SingleQuote\FileManager\Controllers\FoldersController;
+use SingleQuote\FileManager\Controllers\FilesController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Webpatser\Uuid\Uuid; //Uuid::generate();
 use Storage;
 use File;
 use Auth;
 
-class FileManager {
+class FileManager 
+{
 
+    
+    protected $assetPath;
+    protected $userModel;
+    protected $script;
+    protected $modal;
+    protected $css;
+    
+    
+    
     /**
      * Constructor
      *
      */
-    public function __construct() {
+    public function __construct() 
+    {
         $this->assetPath = "vendor/laravel-filemanager/";
+        $this->userModel = config('auth.providers.users.model');
         $this->css = file_exists(public_path("{$this->assetPath}filemanager.min.css")) ? asset("{$this->assetPath}filemanager.min.css") : false;
         $this->script = file_exists(public_path("{$this->assetPath}filemanager.min.js")) ? asset("{$this->assetPath}filemanager.min.js") : false;
-        $this->userModel = config('auth.providers.users.model');
+        
     }
-
+    
+    /**
+     * Set the access variables for the drivers
+     * 
+     */
+    private function setDriversAccess() 
+    {
+        $this->myDrive = $this->config('my_drive') && Auth::check();
+        $this->sharedDrive = $this->config('shared_drive') && $this->myDrive;
+        $this->publicDrive = $this->config('public_drive');
+        
+        if ($this->config('require_authentication_public_drive', false) && !Auth::check()) {
+            $this->publicDrive = false;
+        }
+    }
+    
     /**
      * Return a config value
      *
@@ -29,7 +57,8 @@ class FileManager {
      * @param mixed $default
      * @return mixed
      */
-    private function config(string $name, $default = false) {
+    public function config(string $name, $default = false) 
+    {
         return config("laravel-filemanager.$name", $default);
     }
 
@@ -38,37 +67,62 @@ class FileManager {
      *
      * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
      */
-    public function index(Request $request) {
+    public function index(Request $request) 
+    {
         $this->setDriversAccess();
-
+        
         $activeDriver = $this->setActiveDriver($request);
-
+        
         if (!$this->myDrive && !$this->publicDrive) {
             return redirect()->route($this->config('redirect_not_authenticated', 'login'));
         }
 
+        $driversSize = $this->getDriversSize($activeDriver);
+        
         return view('laravel-filemanager::index')->with([
             'activeDrive' => $activeDriver,
             'css' => $this->css ? $this->css : route(config('laravel-filemanager.prefix'))."/laravel-datatables.css",
             'script' => $this->script ? $this->script : route(config('laravel-filemanager.prefix'))."/laravel-datatables.js",
             'myDrive' => $this->myDrive,
             'sharedDrive' => $this->sharedDrive,
-            'publicDrive' => $this->publicDrive
+            'publicDrive' => $this->publicDrive,
+            'driversSize' => $driversSize ?? 0,
+            'modal' => $this->modal,
+            'maxUpload' => $this->config('max_upload_drive', false)
         ]);
     }
-
+    
     /**
-     * Set the access variables for the drivers
+     * Set the modal attribute to true
      * 
+     * @return index()
      */
-    private function setDriversAccess() {
-        $this->myDrive = $this->config('my_drive') && Auth::check();
-        $this->sharedDrive = $this->config('shared_drive') && $this->myDrive;
-        $this->publicDrive = $this->config('public_drive');
-
-        if ($this->config('require_authentication_public_drive', false) && !Auth::check()) {
-            $this->publicDrive = false;
+    public function modal(Request $request)
+    {
+        $this->modal = true;
+        
+        return $this->index($request);
+    }
+    
+    /**
+     * Get the size of a driver
+     * 
+     * @param string $driver
+     * @return int
+     */
+    private function getDriversSize(string $driver)
+    {
+        $driversPath = $this->pathByDriverName($driver);
+        $path = $this->addPath($driversPath);
+        
+        $file_size = 0;
+        if(File::isDirectory($path)){
+            foreach( File::allFiles($path) as $file){
+                $file_size += $file->getSize();
+            }
         }
+        
+        return $file_size;
     }
 
     /**
@@ -92,11 +146,11 @@ class FileManager {
      * 
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getConfig() {
+    public function loadConfigurations() {
         return response()->json([
-                    "_token" => csrf_token(),
-                    "mediaUrl" => route($this->config("media.prefix", "media"), ""),
-                    "trans" => __('filemanager::laravel-filemanager')
+            "_token" => csrf_token(),
+            "mediaUrl" => route($this->config("media.prefix", "media"), ""),
+            "trans" => __('filemanager::laravel-filemanager')
         ]);
     }
 
@@ -106,22 +160,20 @@ class FileManager {
      * @param Request $request
      * @return mixed
      */
-    public function loadContent(Request $request) {
+    public function loadContent(Request $request) 
+    {
         $this->setDriversAccess();
 
         if (Str::startsWith($request->path, 'drive')) {
-            $structure = Str::after($request->path, 'drive');
-            return $this->loadDrive($request, $structure);
+            return $this->loadDrive($request, 'my drive');
         }
 
         if (Str::startsWith($request->path, 'public')) {
-            $structure = Str::after($request->path, 'public');
-            return $this->loadPublic($request, $structure);
+            return $this->loadDrive($request, 'public drive');
         }
 
         if (Str::startsWith($request->path, 'shared')) {
-            $structure = Str::after($request->path, 'shared');
-            return $this->loadShared($request, $structure);
+            return $this->loadDrive($request, 'shared drive');
         }
 
         return response(__('filemanager::laravel-filemanager.you are not allowed here'), 503);
@@ -133,80 +185,56 @@ class FileManager {
      * @param Request $request
      * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
      */
-    public function loadDrive(Request $request, string $structure = "") {
+    public function loadDrive(Request $request, string $driver = "")
+    {
         if (!$request->user() || !$this->myDrive) {
             return $this->loadPublic();
         }
-
-        $this->path = $this->parseUrl($this->config('path', 'media') . "/my-drive/" . md5($request->user()->id));
-
-        if (!Storage::disk($this->config("disk", "local"))->exists($this->path)) {
-            Storage::disk($this->config("disk"))->makeDirectory($this->path);
-        }
-        $items = $this->getFilesAndFoldersByPath($structure);
+        
+        $path = $this->getPathByDrive($request);
+                
+        $folders = FoldersController::setDriver($path)
+                ->request($request)->count();
+        
+        $files = FilesController::setDriver($path)
+                ->request($request)->count();
 
         return view("laravel-filemanager::content")->with([
-                    'title' => __('filemanager::laravel-filemanager.my drive'),
-                    'breadcrumb' => $this->createBreadCrumb($structure),
-                    'files' => $items[0],
-                    'folders' => $items[1]
+            'title' => __("filemanager::laravel-filemanager.$driver"),
+            'breadcrumb' => $this->createBreadCrumb($request),
+            'files' => $files,
+            'folders' => $folders
         ]);
     }
 
     /**
-     * Load the public drive content
+     * Load the files
      * 
      * @param Request $request
-     * @param string $structure
      * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
      */
-    public function loadPublic(Request $request, string $structure = "") {
-        if (!$this->publicDrive) {
-            abort(503);
-        }
+    public function getFiles(Request $request)
+    {
+        $files = FilesController::setDriver($this->getPathByDrive($request))
+                ->request($request, $this->config('pagination_results_files', null), $request->get('pageFiles', null))
+                ->make();
 
-        $this->path = $this->parseUrl($this->config('path', 'media') . "/public-drive");
-
-        if (!Storage::disk($this->config("disk", "local"))->exists($this->path)) {
-            Storage::disk($this->config("disk"))->makeDirectory($this->path);
-        }
-
-        $items = $this->getFilesAndFoldersByPath($structure);
-
-        return view("laravel-filemanager::content")->with([
-                    'title' => __('filemanager::laravel-filemanager.public drive'),
-                    'breadcrumb' => $this->createBreadCrumb($structure),
-                    'files' => $items[0],
-                    'folders' => $items[1]
-        ]);
+        return view("laravel-filemanager::files")->with(compact('files'));
     }
-
+    
     /**
-     * Load shared content drive
+     * Load the folders
      * 
      * @param Request $request
-     * @param string $structure
      * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
      */
-    public function loadShared(Request $request, string $structure = "") {
-        if (!$this->sharedDrive) {
-            abort(503);
-        }
-
-        $this->path = $this->parseUrl($this->config('path', 'media') . "/shared-drive/" . md5($request->user()->id));
-
-        if (!Storage::disk($this->config("disk", "local"))->exists($this->path)) {
-            Storage::disk($this->config("disk"))->makeDirectory($this->path);
-        }
-
-        $items = $this->getFilesAndFoldersByPath($structure);
-
-        return view("laravel-filemanager::content")->with([
-                    'title' => __('filemanager::laravel-filemanager.shared drive'),
-                    'breadcrumb' => $this->createBreadCrumb($structure),
-                    'files' => $items[0],
-                    'folders' => $items[1]
-        ]);
+    public function getFolders(Request $request)
+    { 
+        $folders = FoldersController::setDriver($this->getPathByDrive($request))
+               ->request($request, $this->config('pagination_results_folders', null), $request->get('pageFolders', null))
+                ->make();
+        
+        return view("laravel-filemanager::folders")->with(compact('folders'));
     }
 
     /**
@@ -215,19 +243,26 @@ class FileManager {
      * @param array $structure
      * @return array
      */
-    private function createBreadCrumb(string $structure = null): array {
-        if (!$structure) {
+    private function createBreadCrumb(Request $request): array 
+    {      
+        $path = $this->getStructure($request);
+        if(!strlen($path)){
             return [];
         }
-
-        $explode = explode('/', $this->parseUrl($structure));
+        
+        $explode    = explode('/', $path);
         $breadcrumb = [];
-        $previous = "";
+        $previous   = "";
         
         foreach ($explode as $index => $key) {
-            $previous .= "$key/";
-            $config = $this->configurateFolder(Storage::disk($this->config("disk", "local"))->path($this->parseUrl("$this->path/$previous")));
-                        
+            
+            $previous .= "$key";
+            
+            $config = FoldersController::getConfig(
+                    Storage::disk($this->config("disk", "local"))->path($this->config('path', 'media')."/$this->drivePath/$previous")
+            );
+            $previous .= "/";         
+            
             $breadcrumb[] = [
                 'path' => $config->path,
                 'name' => $config->name
@@ -238,271 +273,113 @@ class FileManager {
     }
 
     /**
-     * Get the files and folders by structure path
-     * 
-     * @param string $structure
-     * @return boolean
-     */
-    private function getFilesAndFoldersByPath(string $structure) {
-        $path = $this->parseUrl($this->path . "/$structure");
-
-        if (!Storage::disk($this->config("disk", "local"))->exists($path)) {
-            return false;
-        }
-
-        $files = File::files(Storage::disk($this->config("disk", "local"))->path($path));
-
-        foreach ($files as $index => $file) {
-            if (Str::endsWith($file->getPathname(), '.fmc')) {
-                unset($files[$index]);
-                continue;
-            }
-            $files[$index] = $this->configurateFile($file->getPathname());
-        }
-
-        $folders = File::directories(Storage::disk($this->config("disk", "local"))->path($path));
-
-        foreach ($folders as $index => $folder) {
-            $folders[$index] = $this->configurateFolder(str_replace('\\', '/', $folder));
-        }
-
-        return [collect($files), collect($folders)];
-    }
-
-    /**
-     * Read the configuration of a file
-     *
-     * @param string $file
-     * @return object
-     */
-    private function configurateFile(string $file): object {
-        $item = File::get(Str::before($file, '.') . ".fmc");
-        return json_decode($item);
-    }
-
-    /**
-     * Read the configuration of a folder
-     * 
-     * @param string $folder
-     * @return object
-     */
-    private function configurateFolder($folder): object {
-        $config = File::get("$folder.fmc");
-        return json_decode($config);
-    }
-
-    /**
-     * Upload the file
-     * 
-     * @param Request $request
-     * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
-     */
-    public function uploadFiles(Request $request) {
-        $path = $this->getPathByDrive($request);
-        $file = $request->file('file');
-        $id = Uuid::generate();
-
-        $request->file('file')->storeAs(
-                $this->config('path', 'media') . "/$path", $id . "." . $file->getClientOriginalExtension(), $this->config('disk', 'local')
-        );
-
-        $fileConfig = [
-            'basepath' => str_replace("//", "/", "$path/$id." . $file->getClientOriginalExtension()),
-            'id' => "$id",
-            'filename' => Str::before($file->getClientOriginalName(), ".{$file->getClientOriginalExtension()}"),
-            'extension' => $file->getClientOriginalExtension(),
-            'size' => $file->getSize(),
-            'mimetype' => $file->getMimeType(),
-            'image' => Str::startsWith($file->getMimeType(), "image"),
-            'uploader' => $request->user() ? $request->user()->toArray() : null,
-            'created_at' => now()->format('Y-m-d H:i:s'),
-            'updated_at' => now()->format('Y-m-d H:i:s')
-        ];
-
-        Storage::disk($this->config('disk', 'local'))->put($this->config('path', 'media') . "/$path/$id.fmc", json_encode($fileConfig));
-
-        return response("", 204);
-    }
-
-    /**
      * Get the path by drive
      * 
      * @param Request $request
      * @return string
      */
-    private function getPathByDrive(Request $request): string {
+    public function getPathByDrive(Request $request): string 
+    {        
+        return "{$this->getDriversPath($request)}/{$this->getStructure($request)}";
+    }
+    
+    /**
+     * Get the path of the driver
+     * 
+     * @return string
+     */
+    public function getDriversPath(Request $request)
+    {
         $path = $this->parseUrl($request->path);
 
         if (Str::startsWith($path, 'drive')) {
-            return $this->parseUrl("my-drive/" . md5($request->user()->id) . "/" . Str::after($path, 'drive') . '/');
+            return $this->pathByDriverName('drive');
         }
 
         if (Str::startsWith($path, 'public')) {
-            return $this->parseUrl("public-drive/" . Str::after($path, 'public') . '/');
+            return $this->pathByDriverName('public');
         }
 
         if (Str::startsWith($path, 'shared')) {
-            return $this->parseUrl("shared-drive/" . md5($request->user()->id) . "/" . Str::after($path, 'shared') . '/');
+            return $this->pathByDriverName('shared');
         }
 
         abort(503);
     }
-
+    
     /**
-     * Delete a file and it's config
+     * Get the path by the name of the driver
      * 
-     * @param Request $request
-     * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
+     * @param string $driver
+     * @return string
      */
-    public function deleteFile(Request $request) {
-        $path = $this->getPathByDrive($request);
-        $file = $this->config('path') . "/$path/$request->item.fmc";
-
-        if (Storage::disk($this->config('disk', 'local'))->exists($file)) {
-            $config = json_decode(Storage::disk($this->config('disk', 'local'))->get($file));
-            Storage::disk($this->config('disk', 'local'))->delete($this->config('path') . "/$config->basepath");
-            Storage::disk($this->config('disk', 'local'))->delete($file);
-
-            return response("", 204);
+    public function pathByDriverName(string $driver) : string
+    {
+        if ($driver === 'drive') {
+            $this->drivePath = "my-drive/" . md5(Auth::id());
+            return $this->parseUrl("$this->drivePath/");
         }
 
-        abort(403);
-    }
-
-    /**
-     * Delete a folder and its contents
-     * 
-     * @param Request $request
-     * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
-     */
-    public function deleteFolder(Request $request) {
-        $config = $this->getFileConfig($request, 'folder');
-        
-        if (!Storage::disk($this->config('disk', 'local'))->exists($config->basepath)) {
-            abort(403);
+        if ($driver === 'public') {
+            $this->drivePath = "public-drive";
+            return $this->parseUrl("$this->drivePath/");
         }
-            
-        if(isset($config->shared)){
-            foreach($config->shared as $shared){
-                File::deleteDirectory($shared->path);
-                File::delete("$shared->path.fmc");
-            }
+
+        if ($driver === 'shared') {
+            $this->drivePath = "shared-drive";
+            return $this->parseUrl("$this->drivePath/" . md5(Auth::id()));
         }
         
-        Storage::disk($this->config('disk', 'local'))->deleteDirectory($config->basepath);
-        Storage::disk($this->config('disk', 'local'))->delete($config->basepath.".fmc");
-
-        return response("", 204);
-
-        
-    }
-
-    /**
-     * Return the file details
-     * 
-     * @param Request $request
-     * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
-     */
-    public function detailsFile(Request $request) {
-        $config = $this->getFileConfig($request);
-
-        if ($config) {
-
-            $config->uploader = isset($config->uploader) ? $config->uploader->name : false;
-            $config->shared = isset($config->shared) ? true : false;
-
-            return response()->json($config);
-        }
-
-        abort(403);
-    }
-
-    /**
-     * Return the file config if it exists
-     * 
-     * @param Request $request
-     * @return boolean
-     */
-    private function getFileConfig(Request $request, $type = 'file') {
-        $this->path = $this->config('path') . "/" . $this->getPathByDrive($request);
-
-        if ($request->get('type', $type) === 'file') {
-            $file = "$this->path/$request->item.fmc";
-            if (Storage::disk($this->config('disk', 'local'))->exists($file)) {
-                return json_decode(Storage::disk($this->config('disk', 'local'))->get($file));
-            }
-        } else {
-            $folder = Storage::disk($this->config('disk', 'local'))->path("$this->path/$request->item");
-            return (object) $this->configurateFolder($folder);
-        }
-
         return false;
     }
-
+    
     /**
-     * Write the config file
+     * Get the current path
      * 
-     * @param object $file
-     * @param string $path
-     * @return boolean
+     * @param Request $request
+     * @return string
      */
-    private function writeFileConfig(object $file, $path = false) {
-        if (!$path) {
-            $path = $this->config('path') . "/" . Str::before($file->basepath, $file->id) . "$file->id.fmc";
+    public function getStructure(Request $request)
+    {
+        $path = $this->parseUrl($request->path);
+        
+        if (Str::startsWith($path, 'drive')) {
+            return $this->parseUrl(Str::after($path, 'drive'));
         }
-
-        Storage::disk($this->config('disk', 'local'))->put($path, json_encode($file));
-
-        return true;
+        if (Str::startsWith($path, 'public')) {
+            return $this->parseUrl(Str::after($path, 'public'));
+        }
+        if (Str::startsWith($path, 'shared')) {
+            return $this->parseUrl(Str::after($path, 'shared'));
+        }
+        
+        abort(503);
     }
 
     /**
-     * Rename the file and return the config
+     * Return a full path by driver configs
      * 
      * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return string
      */
-    public function renameFile(Request $request) {
-        $file = $this->getFileConfig($request);
-
-        if ($file) {
-            $file->filename = Str::slug($request->rename);
-            $file->updated_at = now()->format('Y-m-d H:i:s');
-            $this->writeFileConfig($file);
-
-            return response()->json($file);
-        }
-
-        abort(403);
-    }
-
-    /**
-     * Create a new folder
-     * 
-     * @param Request $request
-     * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
-     */
-    public function createFolder(Request $request) {
-        $id = Uuid::generate();
+    public function makePath(Request $request, string $add = "") : string
+    {
         $path = $this->getPathByDrive($request);
-
-        $folderPath = $this->parseUrl("$path/$id");
-
-        Storage::disk($this->config('disk', 'local'))->makeDirectory("{$this->config('path')}/$folderPath");
-
-        $data = [
-            'basepath' => $this->parseUrl($folderPath),
-            'path' => $this->parseUrl("$request->path/$id", true),
-            'id' => "$id",
-            'name' => $request->name,
-            'uploader' => $request->user() ? $request->user()->toArray() : null,
-            'created_at' => now()->format('Y-m-d H:i:s'),
-            'updated_at' => now()->format('Y-m-d H:i:s')
-        ];
-
-        Storage::disk($this->config('disk', 'local'))->put("{$this->config('path')}/$folderPath.fmc", json_encode($data));
-
-        return response("", 204);
+        
+        return $this->addPath($path, $add);
+    }
+    
+    /**
+     * Return the full path from storage
+     * 
+     * @param string $path
+     * @param string $add
+     * @return string
+     */
+    public function addPath(string $path, string $add = "")
+    {
+        return Storage::disk($this->config('disk', 'local'))
+                ->path("{$this->config('path', 'media')}/$path/$add");
     }
 
     /**
@@ -511,7 +388,7 @@ class FileManager {
      * @param string $url
      * @return string
      */
-    private function parseUrl(string $url, $withoutDriver = false) {
+    public function parseUrl(string $url, $withoutDriver = false) {
         if ($withoutDriver) {
             $url = str_replace(['drive', 'public', 'shared'], '', $url);
         }
@@ -522,99 +399,6 @@ class FileManager {
         });
 
         return implode($result, '/');
-    }
-
-    /**
-     * Share content between user resources
-     * Determine if a user exists
-     * 
-     * @param Request $request
-     * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
-     */
-    public function shareContent(Request $request) {
-        if (!$request->get('email', false) || strlen($request->email) === 0) {
-            abort(403);
-        }
-
-        $email = explode(',', str_replace(' ', '', $request->email));
-        $model = new $this->userModel;
-        $users = $model->whereIn('email', $email)->get();
-
-        $file = $this->getFileConfig($request);
-
-        if ($request->get('type', 'file') === 'file') {
-            $this->shareFile($file, $users);
-        } else {
-            $this->shareFolder($file, $users);
-        }
-
-        return response("", 204);
-    }
-
-    /**
-     * Create snlink to share a folder with another user resource
-     * 
-     * @param object $folder
-     * @param \Illuminate\Database\Eloquent\Collection $users
-     */
-    private function shareFolder(object $folder, \Illuminate\Database\Eloquent\Collection $users) {
-        foreach ($users as $user) {
-            $path = "$this->path/$folder->path";
-            $newPath = $this->config('path') . "/shared-drive/" . md5($user->id) . "/$folder->path";
-            
-            symlink(
-                Storage::disk($this->config('disk', 'local'))->path($path),
-                Storage::disk($this->config('disk', 'local'))->path($newPath)
-            );
-            symlink(
-                Storage::disk($this->config('disk', 'local'))->path("$path.fmc"),
-                Storage::disk($this->config('disk', 'local'))->path("$newPath.fmc")
-            );
-            
-            $shared = isset($folder->shared) ? (array) $folder->shared : [];
-            $shared[$user->id] = [
-                'user' => $user,
-                'path' => Storage::disk($this->config('disk', 'local'))->path($newPath),
-                'shared_on' => now()->format('Y-m-d H:i:s')
-            ];
-
-            $folder->shared = $shared;
-            $this->writeFileConfig($folder, "$path.fmc");
-        }
-    }
-
-    /**
-     * Create symlink to share a file with another user resource
-     * 
-     * @param object $file
-     * @param \Illuminate\Database\Eloquent\Collection $users
-     */
-    private function shareFile(object $file, \Illuminate\Database\Eloquent\Collection $users) {
-        $path = $this->config('path') . "/" . Str::before($file->basepath, $file->id) . "$file->id";
-
-        foreach ($users as $user) {
-            $newPath = $this->config('path') . "/shared-drive/" . md5($user->id) . "/";
-
-            symlink(
-                Storage::disk($this->config('disk', 'local'))->path($path . '.fmc'),
-                Storage::disk($this->config('disk', 'local'))->path($newPath . "$file->id.fmc")
-            );
-
-            symlink(
-                Storage::disk($this->config('disk', 'local'))->path($path . ".$file->extension"),
-                Storage::disk($this->config('disk', 'local'))->path($newPath . "$file->id.$file->extension")
-            );
-
-            $shared = isset($file->shared) ? (array) $file->shared : [];
-            $shared[$user->id] = [
-                'user' => $user,
-                'path' => Storage::disk($this->config('disk', 'local'))->path($newPath . "$file->id.fmc"),
-                'shared_on' => now()->format('Y-m-d H:i:s')
-            ];
-
-            $file->shared = $shared;
-            $this->writeFileConfig($file);
-        }
     }
     
     /**

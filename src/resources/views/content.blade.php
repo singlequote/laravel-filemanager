@@ -5,65 +5,21 @@
   @endforeach
 </ul>
 
-@if($folders->isEmpty() && $files->isEmpty())
+@if(!$folders && !$files)
 <div class="emptyContent">
     @includeIf("laravel-filemanager::svg.svgEmpty")
     <h4>{{ __('filemanager::laravel-filemanager.this looks empty') }}</h4>
 </div>
 @endif
 
-@if(!$folders->isEmpty())
-<h4>{{ __('filemanager::laravel-filemanager.folders') }}</h4>
-
-<div class="folders">
-    
-    @foreach($folders as $folder)
-    
-    
-    <div class="folder" data-slug="{{ $folder->path }}" data-id="{{ $folder->id }}">
-        <div class="icon"><i data-feather="folder"></i></div>
-        <div class="label">
-            {{ $folder->name }}
-            @if(isset($folder->shared))
-            <div class='shared'>
-                <i data-feather='share-2'></i>
-            </div>
-            @endif
-        </div>
-    </div>
-    @endforeach
-    
-</div>
+@if($folders > 0)
+<h4><small>{{ $folders }}</small> {{ __('filemanager::laravel-filemanager.folders') }}</h4>
+<div class="folders"></div>
 @endif
-@if(!$files->isEmpty())
-<h4>{{ __('filemanager::laravel-filemanager.files') }}</h4>
-<div class="files">
-        
-    @foreach($files as $file)
-    
-    <div class="file" data-id="{{ $file->id }}">
-        @if($file->image)
-            @includeIf("laravel-filemanager::types.image")
-        @else
-            @includeIf("laravel-filemanager::types.icon")
-        @endif
-        <div class="label">
-            {{ $file->filename }}
-            
-            @if(isset($file->shared))
-            <div class='shared'>
-                <i data-feather='share-2'></i>
-            </div>
-            @endif
-        </div>
-        
-        
-    </div>
-        
-    
-    @endforeach
-    
-</div>
+
+@if($files > 0)
+<h4><small>{{ $files }}</small> {{ __('filemanager::laravel-filemanager.files') }}</h4>
+<div class="files"></div>
 @endif
 
 <script type="text/javascript">
