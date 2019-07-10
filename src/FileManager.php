@@ -77,7 +77,7 @@ class FileManager
             return redirect()->route($this->config('redirect_not_authenticated', 'login'));
         }
 
-        $driversSize = $this->getDriversSize($activeDriver);
+        $driversSize = $this->getDriversSize();
         
         return view('laravel-filemanager::index')->with([
             'activeDrive' => $activeDriver,
@@ -110,7 +110,7 @@ class FileManager
      * @param string $driver
      * @return int
      */
-    private function getDriversSize(string $driver)
+    private function getDriversSize(string $driver = "drive")
     {
         $driversPath = $this->pathByDriverName($driver);
         $path = $this->addPath($driversPath);
