@@ -78,8 +78,8 @@ class FileManager
         }
 
         $driversSize = $this->getDriversSize();
-        
-        return view('laravel-filemanager::index')->with([
+        $view = $this->modal ? 'modal' : 'index';
+        return view("laravel-filemanager::$view")->with([
             'activeDrive' => $activeDriver,
             'css' => $this->css ? $this->css : route(config('laravel-filemanager.prefix'))."/laravel-datatables.css",
             'script' => $this->script ? $this->script : route(config('laravel-filemanager.prefix'))."/laravel-datatables.js",
