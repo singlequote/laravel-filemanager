@@ -101,6 +101,22 @@ trait FileFolderTrait
     }
     
     /**
+     * Return the full file|folder path
+     * 
+     * @param string $path
+     * @return string
+     */
+    public static function path(string $path, $storage = true) : string
+    {
+        if($storage){
+            return Storage::disk(config('laravel-filemanager.disk', 'local'))
+                ->path(config('laravel-filemanager.path', 'media')."/$path");
+        }
+        
+        return config('laravel-filemanager.path', 'media')."/$path";
+    }
+    
+    /**
      * Read the configuration of a folder
      * 
      * @param string $path
