@@ -81,8 +81,8 @@ class FileManager
         $view = $this->modal ? 'modal' : 'index';
         return view("laravel-filemanager::$view")->with([
             'activeDrive' => $activeDriver,
-            'css' => $this->css ? $this->css : route(config('laravel-filemanager.prefix'))."/laravel-datatables.css",
-            'script' => $this->script ? $this->script : route(config('laravel-filemanager.prefix'))."/laravel-datatables.js",
+            'css' => $this->css ? $this->css : route(config('laravel-filemanager.prefix'))."/laravel-datatables-css",
+            'script' => $this->script ? $this->script : route(config('laravel-filemanager.prefix'))."/laravel-datatables-js",
             'myDrive' => $this->myDrive,
             'sharedDrive' => $this->sharedDrive,
             'publicDrive' => $this->publicDrive,
