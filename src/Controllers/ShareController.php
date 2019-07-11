@@ -32,14 +32,14 @@ class ShareController extends \SingleQuote\FileManager\FileManager
         
         $this->path  = $this->makePath($request, $request->item);
         $this->users = $model->whereIn('email', $email)->get();
-        $this->file  = FilesController::getConfig($this->path);
-        
+        $this->item  = FilesController::getConfig($this->path);
     }
     
     /**
-     * Share a file with the given users resource
+     * Share file with the selected users
      * 
      * @param Request $request
+     * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
      */
     public function file(Request $request)
     {
@@ -49,25 +49,71 @@ class ShareController extends \SingleQuote\FileManager\FileManager
             $sharedPath = "{$this->config('path', 'media')}/shared-drive/" . md5($user->id);
             $newPath = Storage::disk($this->config('disk', 'local'))->path($sharedPath);
 
-            File::link("$this->path.fmc","$newPath/{$this->file->id}.fmc");
+            File::link("$this->path.fmc","$newPath/{$this->item->id}.fmc");
                 
-            $shared = isset($this->file->shared) ? (array) $this->file->shared : [];
+            $shared = isset($this->item->shared) ? (array) $this->item->shared : [];
             
             $shared[$user->id] = [
                 'user' => $user,
-                'path' => "$newPath/{$this->file->id}",
+                'path' => "$newPath/{$this->item->id}",
                 'shared_on' => now()->format('Y-m-d H:i:s')
             ];
 
-            $this->file->shared = $shared;
+            $this->item->shared = $shared;
             
-            FilesController::writeToConfig($this->file, "$sharedPath/{$this->file->id}.fmc");
+            FilesController::writeToConfig($this->item, "$sharedPath/{$this->item->id}.fmc");
         }
+        
+        return response("", 204);
     }
     
-    public function folder()
+    /**
+     * Share folder with the selected users
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
+     */
+    public function folder(Request $request)
     {
+        $this->buildData($request);
         
+        foreach ($this->users as $user) {
+            $sharedPath = "{$this->config('path', 'media')}/shared-drive/" . md5($user->id);
+            $newPath = Storage::disk($this->config('disk', 'local'))->path($sharedPath);
+
+            File::link("$this->path.fmc","$newPath/{$this->item->id}.fmc");
+            File::link("$this->path","$newPath/{$this->item->id}.");
+                
+            $shared = isset($this->item->shared) ? (array) $this->item->shared : [];
+            
+            $shared[$user->id] = [
+                'user' => $user,
+                'path' => "$newPath/{$this->item->id}",
+                'shared_on' => now()->format('Y-m-d H:i:s')
+            ];
+
+            $this->item->shared = $shared;
+            
+            FilesController::writeToConfig($this->item, "$sharedPath/{$this->item->id}.fmc");
+        }
+        
+        return response("", 204);
+    }
+    
+    /**
+     * Delete all the shared conenctions of an item
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
+     */
+    public function deleteSharedItems(Request $request)
+    {        
+        $path  = $this->makePath($request, $request->item);
+        $item  = FilesController::getConfig($path);
+        
+        self::delete($item);
+        
+        return response("", 204);
     }
     
     /**
@@ -84,7 +130,12 @@ class ShareController extends \SingleQuote\FileManager\FileManager
         
         foreach($config->shared as $shared){
             File::delete("$shared->path.fmc");
+            File::deleteDirectory("$shared->path");
         }
+        
+        unset($config->shared);
+        
+        FilesController::writeToConfig($config);
         
         return true;
     }

@@ -67,7 +67,7 @@ class FileManager
      *
      * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
      */
-    public function index(Request $request) 
+    public function index(Request $request)
     {
         $this->setDriversAccess();
         
@@ -257,12 +257,11 @@ class FileManager
         $previous   = "";
         
         foreach ($explode as $index => $key) {
-            
             $previous .= "$key";
-            
             $config = FoldersController::getConfig(
-                    Storage::disk($this->config("disk", "local"))->path($this->config('path', 'media')."/$this->drivePath/$previous")
+                Storage::disk($this->config("disk", "local"))->path($this->config('path', 'media')."/$this->drivePath/$previous")
             );
+            
             $previous .= "/";         
             
             $breadcrumb[] = [
@@ -328,8 +327,8 @@ class FileManager
         }
 
         if ($driver === 'shared') {
-            $this->drivePath = "shared-drive";
-            return $this->parseUrl("$this->drivePath/" . md5(Auth::id()));
+            $this->drivePath = "shared-drive/" . md5(Auth::id());
+            return $this->parseUrl($this->drivePath);
         }
         
         return false;
@@ -400,8 +399,8 @@ class FileManager
         $result = array_filter($explode, function($key) {
             return strlen($key) > 0;
         });
-
-        return implode($result, '/');
+        $route = implode($result, '/');
+        return Str::startsWith($route, 'var') ? "/$route" : $route;
     }
     
     /**

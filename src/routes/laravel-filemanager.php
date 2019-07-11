@@ -24,10 +24,10 @@ Route::group(['prefix' => config('laravel-filemanager.prefix'), 'middleware' => 
     
     Route::post('share/file'         , '\SingleQuote\FileManager\Controllers\ShareController@file');
     Route::post('share/folder'       , '\SingleQuote\FileManager\Controllers\ShareController@folder');
-    Route::delete('shared'           , '\SingleQuote\FileManager\Controllers\ShareController@delete');
+    Route::delete('shared'           , '\SingleQuote\FileManager\Controllers\ShareController@deleteSharedItems');
     
-    Route::get('laravel-datatables.js'  , '\SingleQuote\FileManager\FileManager@getScript');
-    Route::get('laravel-datatables.css' , '\SingleQuote\FileManager\FileManager@getStyle');
+    Route::get('laravel-datatables-js'  , '\SingleQuote\FileManager\FileManager@getScript');
+    Route::get('laravel-datatables-css' , '\SingleQuote\FileManager\FileManager@getStyle');
 });
 
 /**

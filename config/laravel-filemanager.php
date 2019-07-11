@@ -58,7 +58,7 @@ return [
      * 
      */
     'pagination_results_folders' => 12, //2 rows
-    'pagination_results_files' => 18, //3 rows
+    'pagination_results_files' => 15, //3 rows
     
     /**
      * Upload limit for private drive

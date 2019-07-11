@@ -54,6 +54,14 @@ class FileController
             e.preventDefault();
             this.update(e);
         });
+        
+        $(document).on('click', '.load-more[data-type="files"]', (e) => {  
+            $(e.currentTarget).remove();
+            this.FileManager.pageFiles = this.FileManager.pageFiles + 1;
+            this.FileManager.loadFiles(() => {
+                this.FileManager.setContentPlugins();
+            });
+        });
     }
 
     /**

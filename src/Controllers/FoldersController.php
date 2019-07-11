@@ -27,17 +27,18 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
         if (!File::isDirectory($this->getPath())) {
             abort(503);
         }
-
-        $folders = File::directories($this->getPath());
-        foreach ($folders as $index => $folder) {
-            if(File::exists("$folder.fmc")){
-                $folders[$index] = "$folder.fmc";
-            }else{
-                File::deleteDirectory($folder);
+        
+        $items = File::files($this->getPath());
+        $folders = [];
+        foreach ($items as $item) {
+            $content = File::get($item->getPathname(), false);
+            $object = json_decode($content);
+            if($object && $object->type === 'folder'){
+                $folders[] = $object;
             }
         }
-
-        return array_values($folders);
+        
+        return $folders;
     }
     
     /**
@@ -56,6 +57,8 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
             Storage::disk($this->config('disk', 'local'))->delete($this->config('path') . "/$folder->basepath");
             Storage::disk($this->config('disk', 'local'))->delete($config);
 
+            ShareController::delete($folder);
+            
             return response("", 204);
         }
 
@@ -76,6 +79,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
         Storage::disk($this->config('disk', 'local'))->makeDirectory("{$this->config('path')}/$folderPath");
 
         $data = [
+            'type' => "folder",
             'basepath' => $this->parseUrl($folderPath),
             'path' => $this->parseUrl("$request->path/$id", true),
             'id' => "$id",

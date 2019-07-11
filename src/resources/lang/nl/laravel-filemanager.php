@@ -33,7 +33,7 @@ return [
     'share folder' => "Map delen",
     "shared drive" => "Gedeelde drive",
     "or anyone with this link" => "Of iedereen met deze link",
-    "load more" => "Meer resultaten laden",
+    "load more" => "Laad meer",
     "storage" => "Opslag",
     "name" => "Naam",
     "shared with" => "Gedeeld met",

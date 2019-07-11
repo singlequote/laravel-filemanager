@@ -38,6 +38,10 @@ class FolderController
         $(document).on('dblclick', '.folder', (e) => {
             let path = $(e.currentTarget).data('slug');
             this.FileManager.loadContent(this.FileManager.setUrl('load/content', path));
+            setTimeout(() => {
+                this.FileManager.domDetails.find('.button').remove();
+            },500);
+            
         });
         
         $(document).on('folder:create', (e) => {
@@ -51,6 +55,14 @@ class FolderController
         $(document).on('submit', '#editFolder', (e) => {
             e.preventDefault();
             this.update(e);
+        });
+        
+        $(document).on('click', '.load-more[data-type="folders"]', (e) => {  
+            $(e.currentTarget).remove();
+            this.FileManager.pageFolders = this.FileManager.pageFolders + 1;
+            this.FileManager.loadFolders(() => {
+//                this.FileManager.setContentPlugins();
+            });
         });
     }
 

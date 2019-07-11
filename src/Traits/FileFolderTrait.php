@@ -210,11 +210,6 @@ trait FileFolderTrait
         }else{
             $items = $this->load();
         }
-
-        foreach ($items as $index => $item) {
-            $content = File::get(is_string($item) ? $item : $item->getPathname(), false);
-            $items[$index] = json_decode($content);
-        }
                 
         return collect($items);
     }

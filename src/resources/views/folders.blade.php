@@ -13,7 +13,7 @@
 @endforeach
 
 @if($folders->showMore)
-<div class="load-more" data-type="folder">
+<div class="load-more" data-type="folders">
     <div class="icon"><i data-feather="chevrons-down"></i> </div>
     <div class="label">{{ __('filemanager::laravel-filemanager.load more') }}</div>
 </div>

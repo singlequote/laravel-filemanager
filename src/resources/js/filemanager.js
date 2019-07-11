@@ -77,6 +77,7 @@ class FileManager
     checkSizes()
     {
         if(this.modal){
+            this.domPackage.css({'grid-template-columns' : '20% 55% 25%', 'font-size' : '12px'});
             this.domContent.find('.files').css('grid-template-columns', 'repeat(4, 25%)');
             this.domContent.find('.folders').css('grid-template-columns', 'repeat(4, 25%)');
         }
@@ -115,33 +116,7 @@ class FileManager
         //Reload the disk size
         $(document).on('click', '#diskSize', () => {
             this.reloadDiskSize();
-        });
-                
-//        $(document).on('submit', '#renameContent', (e) => { this.submitRenameContent(e); });
-//        $(document).on('submit', '#addFolder', (e) => { this.submitAddFolder(e); });
-//        $(document).on('submit', '#shareContent', (e) => { this.submitShareContent(e); });
-        
-
-//                
-//        $(document).on('click', '.selectOnClick', (e) => {   this.copyToClipboard(e.currentTarget); });
-//        
-//        $(document).on('click', '.load-more', (e) => {  
-//            let type = $(e.currentTarget).data('type');
-//            $(e.currentTarget).remove();
-//            if(type === 'files'){
-//                this.pageFiles = this.pageFiles + 1;
-//                this.loadFiles(() => {
-//                    this.setContentPlugins();
-//                });
-//            }else{
-//                this.pageFolders = this.pageFolders + 1;
-//                this.loadFolders(() => {
-//                    this.setContentPlugins();
-//                });
-//            }
-//        });
-        
-        
+        });    
     }
     
     /**
@@ -299,7 +274,7 @@ class FileManager
      * 
      * @returns {undefined}
      */
-    loadContent(setUrl = false)
+    loadContent(setUrl = false,  retries = 0)
     {       
         let url = setUrl ? setUrl : this.url(`load/content`);
         this.pageFolders = 1;
@@ -314,7 +289,11 @@ class FileManager
                 });
             });
             
-        });
+        }).fail(() => {
+            if(retries < 2){
+                this.loadContent(setUrl, retries + 1);
+            }
+        });;
     }
     
     /**
@@ -322,7 +301,7 @@ class FileManager
      * 
      * @returns {undefined}
      */
-    loadFolders(callback = null)
+    loadFolders(callback = null, retries = 0)
     {
         this.domPackage.find('.folders').append(this.loader());
         
@@ -333,6 +312,10 @@ class FileManager
            if(callback){
                return callback();
            }
+        }).fail(() => {
+            if(retries < 2){
+                this.loadFolders(callback, retries + 1);
+            }
         });
     }
     
@@ -341,7 +324,7 @@ class FileManager
      * 
      * @returns {undefined}
      */
-    loadFiles(callback = null)
+    loadFiles(callback = null, retries = 0)
     {
         this.domPackage.find('.files').append(this.loader());
         $.get(this.url('get/files'), (response) => {
@@ -351,6 +334,10 @@ class FileManager
            if(callback){
                return callback();
            }
+        }).fail(() => {
+            if(retries < 2){
+                this.loadFiles(callback, retries + 1);
+            }
         });
     }
     
@@ -387,7 +374,7 @@ class FileManager
         this.domPackage = $('#package-filemanager');
         this.domSidebar = $('#package-sidebar');
         this.domContent = $('#package-content');
-        this.domInfo    = $('#package-info');
+        this.domDetails = $('#package-details');
     }
     
     /**

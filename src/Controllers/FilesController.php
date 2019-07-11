@@ -30,15 +30,17 @@ class FilesController extends \SingleQuote\FileManager\FileManager
             abort(503);
         }
 
-        $files = File::files($this->getPath());
-
-        foreach ($files as $index => $file) {
-            if (!Str::endsWith($file, '.fmc') || File::isDirectory(Str::before($file->getPathName(), '.fmc'))) {
-                unset($files[$index]);
+        $items = File::files($this->getPath());
+        $files = [];
+        foreach ($items as $item) {
+            $content = File::get($item->getPathname(), false);
+            $object = json_decode($content);
+            if($object && $object->type === 'file'){
+                $files[] = $object;
             }
         }
-
-        return array_values($files);
+        
+        return $files;
     }
 
     /**
@@ -59,7 +61,7 @@ class FilesController extends \SingleQuote\FileManager\FileManager
 
             return response()->json($config);
         }
-
+        
         abort(403);
     }
 
@@ -81,6 +83,7 @@ class FilesController extends \SingleQuote\FileManager\FileManager
         );
 
         $fileConfig = [
+            'type' => "file",
             'basepath' => str_replace("//", "/", "$path/$id." . $file->getClientOriginalExtension()),
             'id' => "$id",
             'filename' => Str::before($file->getClientOriginalName(), ".{$file->getClientOriginalExtension()}"),

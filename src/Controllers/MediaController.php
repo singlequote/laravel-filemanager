@@ -46,6 +46,7 @@ class MediaController extends Controller
      */
     public function getFile(Request $request, $height = null, $width = null, $file = null, $response = false)
     {
+        
         $this->cachefolder = config('laravel-filemanager.path', "media");
         
         $this->request = $request;

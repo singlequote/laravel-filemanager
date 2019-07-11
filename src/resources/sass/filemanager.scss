@@ -8,7 +8,7 @@
 @import "./jquery-ui";
 
 #package-filemanager{
-    font-family: 'Roboto', sans-serif;
+    font-family: $font-family;
     color:$gray-600;
     width:100%;
     height:100%;
@@ -107,12 +107,6 @@
             }
 
         }
-            
-        
-        .sidebar-footer{
-            
-        }
-
 
     }
 
@@ -122,6 +116,7 @@
         
         
         .load-more{
+            height:28px;
             position: relative;
             cursor:pointer;
             padding:7px;
@@ -146,7 +141,6 @@
 
         .folders{
             display:grid;
-            grid-template-columns:repeat(6, 16.6666666667%);
 
             .folder{
                 position: relative;
@@ -162,7 +156,7 @@
                     position: absolute;
                     right: 10px;
                     top: 10px;
-                    color: #1967d2;
+                    color: $blue;
                 }
                 
                 .label{
@@ -175,7 +169,6 @@
 
         .files{
             display:grid;
-            grid-template-columns:repeat(6, 16.6666666667%);
 
             .file{
                 position: relative;
@@ -186,9 +179,9 @@
                 
                 .shared{
                     position: absolute;
-                    bottom: 10px;
+                    bottom: 0px;
                     right: 10px;
-                    color: #1967d2;
+                    color: #00236d;
                 }
 
                 .image{
@@ -214,16 +207,39 @@
                 }
 
                 .label{
-                    height:30px;
-                    padding:5px;
+                    height: 40px;
+                    padding: 5px;
                     text-align: center;
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
+                    line-height: 40px;
                 }
 
             }
 
+        }
+        
+        .files,.folders{
+            grid-template-columns:repeat(3, 33.33333333333333%);
+        }
+        
+        @media screen and (min-width: 1345px) {
+            .files,.folders{
+                grid-template-columns:repeat(4, 25%);
+            }
+        }
+        
+        @media screen and (min-width: 1600px) {
+            .files,.folders{
+                grid-template-columns:repeat(5, 20%);
+            }
+        }
+        
+        @media screen and (min-width: 2000px) {
+            .files,.folders{
+                grid-template-columns:repeat(6, 16.6666666667%);
+            }
         }
 
         .uploader{
@@ -307,6 +323,7 @@
     .button {
         background-color: $green; /* Green */
         border: none;
+        border-radius:5px;
         color: white;
         padding: 16px 32px;
         text-align: center;
@@ -322,10 +339,14 @@
     .button-small{
         padding: 7px 23px;
     }
+    
+    .button-xs{
+        padding: 5px 5px 0px 5px;
+    }
 
     .button-green {
         background-color: $white; 
-        color: $black; 
+        color: $green; 
         border: 2px solid $green;
     }
 
@@ -336,7 +357,7 @@
 
     .button-blue {
         background-color: $white; 
-        color: $black; 
+        color: $blue; 
         border: 2px solid $blue;
     }
 
@@ -347,7 +368,7 @@
 
     .button-red {
         background-color: $white; 
-        color: $black; 
+        color: $red; 
         border: 2px solid $red;
     }
 
@@ -358,7 +379,7 @@
 
     .button-default {
         background-color: $white;
-        color: $black!important;
+        color: $gray-400!important;
         border: 2px solid $gray-400;
     }
 

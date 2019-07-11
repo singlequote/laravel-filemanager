@@ -62,12 +62,12 @@
 
 <hr>
 
-<button class='button button-small button-green {{ $type }}-button' data-id='{{ $config->id }}' onclick="$(this).trigger('{{ $type }}:share')"><i data-feather='share-2'></i></button>
+<button class='button button-xs button-green {{ $type }}-button' data-id='{{ $config->id }}' onclick="$(this).trigger('{{ $type }}:share')"><i data-feather='share-2'></i></button>
 @if(isset($config->shared))
-<button title='{{ __('filemanager::laravel-filemanager.remove the shared links') }}' class='button button-small button-black {{ $type }}-button' data-id='{{ $config->id }}' onclick="$(this).trigger('{{ $type }}:delete-shared')"><i data-feather='shield'></i></button>
+<button title='{{ __('filemanager::laravel-filemanager.remove the shared links') }}' class='button button-xs button-black {{ $type }}-button' data-id='{{ $config->id }}' onclick="$(this).trigger('{{ $type }}:delete-shared')"><i data-feather='shield'></i></button>
 @endif
-<button class='button button-small button-blue {{ $type }}-button' data-id='{{ $config->id }}' onclick="$(this).trigger('{{ $type }}:edit')"><i data-feather='edit'></i></button>
-<button class='button button-small button-red {{ $type }}-button' data-id='{{ $config->id }}' onclick="$(this).trigger('{{ $type }}:delete')"><i data-feather='trash'></i></button>
+<button class='button button-xs button-blue {{ $type }}-button' data-id='{{ $config->id }}' onclick="$(this).trigger('{{ $type }}:edit')"><i data-feather='edit'></i></button>
+<button class='button button-xs button-red {{ $type }}-button' data-id='{{ $config->id }}' onclick="$(this).trigger('{{ $type }}:delete')"><i data-feather='trash'></i></button>
 
 <div class='text-center'>
     
