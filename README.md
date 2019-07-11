@@ -27,6 +27,27 @@ php artisan vendor:publish --tag=laravel-filemanager-locale
 //publish images for file extensions
 php artisan vendor:publish --tag=laravel-filemanager-images
 ```
+## Quick start
+Download the package, publish the config and the assets (or just the images only) the package will auto require the script and styling files. The default route is  `/filemanager` change it in the config
+
+### Hard cache
+The package (when enabled) will cache all the files inside the public folder. To instant load the files, paste this in your `public/.htaccess`
+
+```htaccess
+    # Serve cached images if available
+    RewriteCond %{DOCUMENT_ROOT}/cached%{REQUEST_URI} -f
+    RewriteRule . cached%{REQUEST_URI} [L]
+```
+
+### To do list
+
+ - [ ] Docs
+ - [ ] Sharing folders by link
+ - [x] Sharing files by link
+ - [ ] Update design
+
+![Preview 1](https://i.gyazo.com/230b5bbf3828807dd9fee340dae65eb2.jpg)
+![Preview 2](https://i.gyazo.com/e21b610a0756a6cc753d830cb7a20a5e.jpg)
 
 ### Changelog
 
