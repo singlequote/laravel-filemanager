@@ -35,7 +35,7 @@ The package (when enabled) will cache all the files inside the public folder. To
 
 ```htaccess
     # Serve cached images if available
-    RewriteCond %{DOCUMENT_ROOT}/cached%{REQUEST_URI} -f
+    RewriteCond %{DOCUMENT_ROOT}/%{REQUEST_URI} -f
     RewriteRule . cached%{REQUEST_URI} [L]
 ```
 
