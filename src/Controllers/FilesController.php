@@ -35,9 +35,12 @@ class FilesController extends \SingleQuote\FileManager\FileManager
         foreach ($items as $item) {
             $content = File::get($item->getPathname(), false);
             $object = json_decode($content);
-            if($object && $object->type === 'file'){
+            if($object && isset($object->type) && $object->type === 'file'){
                 $files[] = $object;
-            }
+            }elseif($object && Str::contains($object->basepath, '.')){
+				$files[] = $object;
+			}
+			
         }
         
         return $files;
