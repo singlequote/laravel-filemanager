@@ -33,9 +33,11 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
         foreach ($items as $item) {
             $content = File::get($item->getPathname(), false);
             $object = json_decode($content);
-            if($object && $object->type === 'folder'){
+            if($object && isset($object->type) && $object->type === 'folder'){
                 $folders[] = $object;
-            }
+            }elseif($object && !Str::contains($object->basepath, '.')){
+				$folders[] = $object;
+			}
         }
         
         return $folders;
