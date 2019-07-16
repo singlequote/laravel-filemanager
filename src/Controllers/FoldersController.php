@@ -107,11 +107,11 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
      * @param string $path
      * @return string
      */
-    public static function createDirectory(string $driver, string $path): string
+    public static function createDirectory(string $driver, string $path, string $generateUUID = null): string
     {
         $explodePath = explode('/', $path);
         $name = array_pop($explodePath);
-        $id = Str::uuid();
+        $id = !$generateUUID ? Str::uuid() : $generateUUID;
         $class = new FoldersController;
         $driversPath = $class->pathByDriverName($driver);
         $folderPath = $class->parseUrl("$driversPath/" . implode($explodePath, '/') . "/$id");
@@ -173,5 +173,21 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
         }
 
         abort(403);
+    }
+    
+    /**
+     * Check if directory exists
+     * 
+     * @param string $driver
+     * @param string $path
+     * @return bool
+     */
+    public static function exists(string $driver, string $path): bool
+    {
+        $class = new FoldersController;
+        $driversPath = $class->pathByDriverName($driver);
+        $folderPath = $class->parseUrl("$driversPath/$path");
+        
+        return Storage::disk($class->config('disk', 'local'))->exists("{$class->config('path')}/$folderPath.fmc");
     }
 }
