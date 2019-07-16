@@ -30,14 +30,8 @@ php artisan vendor:publish --tag=laravel-filemanager-images
 ## Quick start
 Download the package, publish the config and the assets (or just the images only) the package will auto require the script and styling files. The default route is  `/filemanager` change it in the config
 
-### Hard cache
-The package (when enabled) will cache all the files inside the public folder. To instant load the files, paste this in your `public/.htaccess`
-
-```htaccess
-    # Serve cached images if available
-    RewriteCond %{DOCUMENT_ROOT}/%{REQUEST_URI} -f
-    RewriteRule . %{REQUEST_URI} [L]
-```
+### Instant file loading
+The package caches the files with new formats (when changed) in the public folder. When the file is cached inside the public folder, the browser can instant load the file.
 
 ### To do list
 
