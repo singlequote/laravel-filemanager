@@ -6,7 +6,7 @@
         <title>Laravel Filemanager</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <link rel="stylesheet" href="{{ $css }}" media="screen">
+        
         <style>
             html, body { width: 100%; height: 100%; margin: 0px; padding: 0px; }
         </style>
@@ -14,7 +14,6 @@
     <body>
 
         @includeIf('laravel-filemanager::package')
-
         <script src="{{ $script }}"></script>
     </body>
 </html>

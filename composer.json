@@ -1,6 +1,6 @@
 {
     "name": "singlequote/laravel-filemanager",
-    "description": "A simple filemanager",
+    "description": "Google drive based filemanager. Lightweight and extreemly powerfull.",
     "keywords": [
         "Filesystem",
         "Files",
@@ -9,7 +9,7 @@
     ],
     "homepage": "https://github.com/singlequote/laravel-filemanager",
     "license": "MIT",
-    "version": "1.1.7",
+    "version": "1.1.8",
     "authors": [
         {
             "name": "Wim Pruiksma",
@@ -21,7 +21,8 @@
     "require": {
         "php": "^7.0",
         "laravel/framework": "5.*",
-        "intervention/image": "^2.4"
+        "intervention/image": "^2.4",
+        "swayok/alternative-laravel-cache": "^5.4"
     },
     "require-dev": {
         

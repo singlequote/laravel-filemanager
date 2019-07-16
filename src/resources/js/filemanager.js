@@ -1,4 +1,4 @@
-if(typeof $ === "undefined"){
+if (typeof $ === "undefined") {
     window.$ = window.jQuery = require('./jquery-3.4.1');
 }
 
@@ -22,28 +22,23 @@ class FileManager
     constructor()
     {
         this.currentPath;
-        
-        
+
+
         this.pageFolders = 1;
         this.pageFiles = 1;
-        
+
         this.loadRequiredPlugins(() => {
             this.setElements();
             this.modal = this.domPackage.data('modal');
 
             this.loadConfig(() => {
-                this.build(() => {
-                    this.box    = new Box(this);
-                    this.file   = new FileController(this);
-                    this.share  = new ShareController(this);
-                    this.folder = new FolderController(this);
-                                        
-                    this.replaceSize();
-                });
+                
+                this.build();
             });
         });
+        
     }
-    
+
     /**
      * Build the package
      * 
@@ -51,24 +46,31 @@ class FileManager
      */
     build(callback = false)
     {
-        if($('#package-filemanager').length === 0){
+        if ($('#package-filemanager').length === 0) {
             return false;
         }
-        
+
         $('#package-filemanager').disableSelection();
-        if($('.sidebar-button.active').length === 0){
+        if ($('.sidebar-button.active').length === 0) {
             $('.sidebar-button').first().addClass('active');
         }
+        if (typeof this.domPackage.data('start') === "undefined" || (this.domPackage.data('start') && this.domPackage.data('start') === true)) {
+            this.loadContent();
+        }
         
-        this.loadContent();
         this.loadContextMenus();
         this.loadTriggers();
+
+        this.box = new Box(this);
+        this.file = new FileController(this);
+        this.share = new ShareController(this);
+        this.folder = new FolderController(this);
         
-        if(callback){
-            callback();
-        }
+        this.replaceSize();
+        
+        $(document).trigger('laravel-filemanager:loaded');
     }
-    
+
     /**
      * Check the sizes of the grid layout
      * 
@@ -76,26 +78,26 @@ class FileManager
      */
     checkSizes()
     {
-        if(this.modal){
-            this.domPackage.css({'grid-template-columns' : '20% 55% 25%', 'font-size' : '12px'});
+        if (this.modal) {
+            this.domPackage.css({'grid-template-columns': '20% 55% 25%', 'font-size': '12px'});
             this.domContent.find('.files').css('grid-template-columns', 'repeat(4, 25%)');
             this.domContent.find('.folders').css('grid-template-columns', 'repeat(4, 25%)');
         }
     }
-        
+
     /**
      * Load the config file
      * 
      * @returns {undefined}
      */
     loadConfig(callback)
-    {      
+    {
         $.getJSON(this.url('config'), (response) => {
             this.config = response;
             callback();
         });
     }
-    
+
     /**
      * Load triggers
      * 
@@ -104,21 +106,27 @@ class FileManager
     loadTriggers()
     {
         //Change the driver
-        $(document).on('click', '#package-filemanager .sidebar-button.drive', (e) => { this.changeDrive(e); });
-        
+        $(document).on('click', '#package-filemanager .sidebar-button.drive', (e, reload = true) => {
+            this.changeDrive(e, reload);
+        });
+
         //Change the active folder and reload the content
         $(document).on('click', '#package-content .breadcrumb li a', (e) => {
             e.preventDefault();
             let element = $(e.currentTarget);
             this.loadContent(this.setUrl('load/content', element.attr('href')));
         });
-        
+
         //Reload the disk size
         $(document).on('click', '#diskSize', () => {
             this.reloadDiskSize();
-        });    
+        });
+        
+        $(document).on('laravel-filemanager:start', () => {
+            $(document).trigger('laravel-filemanager:loaded');
+        });
     }
-    
+
     /**
      * Replace sizes to readable sizes
      * 
@@ -130,7 +138,7 @@ class FileManager
             $(size).removeClass('size').html(this.formatBytes($(size).html()));
         });
     }
-    
+
     /**
      * Reload the disk size
      * 
@@ -143,7 +151,7 @@ class FileManager
             feather.replace();
         });
     }
-    
+
     /**
      * Copy text to clipboard
      * 
@@ -158,24 +166,26 @@ class FileManager
         document.execCommand("copy");
         $temp.remove();
     }
-    
+
     /**
      * Change the current drive to selected slug
      * 
      * @param {type} e
      * @returns {undefined}
      */
-    changeDrive(e)
+    changeDrive(e, reload)
     {
         let element = $(e.currentTarget);
         $('#package-filemanager .sidebar-button.drive.active').removeClass('active');
         element.addClass('active');
         this.currentPath = $('.sidebar-button.active').data('slug');
-        this.loadContent();
-        
+        if (typeof this.domPackage.data('start') === "undefined" || (this.domPackage.data('start') && this.domPackage.data('start') === true)) {
+            this.loadContent();
+        }
+
         window.history.pushState('filemanager', 'SingleQuote', `${location.origin}${location.pathname}?driver=${this.currentPath}`);
     }
-    
+
     /**
      * Set the contect menu items
      * 
@@ -183,14 +193,14 @@ class FileManager
      */
     loadContextMenus()
     {
-        
+
         $.contextMenu({
             targets: '#package-content .file, #package-content .folder',
             menu: [
                 {
                     name: this.trans('rename'),
                     icon: `edit`,
-                    callback : (e) => {
+                    callback: (e) => {
                         let type = $(e.currentTarget).hasClass('file') ? 'file' : 'folder';
                         $(e.currentTarget).trigger(`${type}:edit`);
                     }
@@ -198,7 +208,7 @@ class FileManager
                 {
                     name: this.trans('details'),
                     icon: `clipboard`,
-                    callback : (e) => {
+                    callback: (e) => {
                         let type = $(e.currentTarget).hasClass('file') ? 'file' : 'folder';
                         $(e.currentTarget).trigger(`${type}:details`);
                     }
@@ -206,7 +216,7 @@ class FileManager
                 {
                     name: this.trans('share'),
                     icon: `share-2`,
-                    callback : (e) => {
+                    callback: (e) => {
                         let type = $(e.currentTarget).hasClass('file') ? 'file' : 'folder';
                         $(e.currentTarget).trigger(`${type}:share`);
                     }
@@ -214,37 +224,37 @@ class FileManager
                 {
                     name: this.trans('delete'),
                     icon: `trash`,
-                    callback : (e) => {
+                    callback: (e) => {
                         let type = $(e.currentTarget).hasClass('file') ? 'file' : 'folder';
                         $(e.currentTarget).trigger(`${type}:delete`);
                     }
                 }
-                
+
             ]
-            
+
         });
-        
+
         $.contextMenu({
             targets: '#package-content',
             menu: [
                 {
                     name: this.trans('upload files'),
                     icon: `upload`,
-                    callback : () => {
+                    callback: () => {
                         $(document).trigger('file:upload');
                     }
-                },{
+                }, {
                     name: this.trans('new folder'),
                     icon: `folder-plus`,
-                    callback : (e, menu, position) => {
+                    callback: (e, menu, position) => {
                         $(document).trigger('folder:create');
                     }
                 }
             ]
-            
+
         });
     }
-    
+
     /**
      * Load required plugins like JQuery
      * 
@@ -253,49 +263,71 @@ class FileManager
      */
     loadRequiredPlugins(callback)
     {
-        if(typeof feather === "undefined"){
-            $.getScript('https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js', () =>{
+        if (typeof feather === "undefined") {
+            $.getScript('https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js', () => {
                 feather.replace();
             });
         }
-        
-        if (typeof jQuery.ui === "undefined"){
-            $.getScript('https://code.jquery.com/ui/1.12.1/jquery-ui.js', () =>{
+
+        if (typeof jQuery.ui === "undefined") {
+            $.getScript('https://code.jquery.com/ui/1.12.1/jquery-ui.js', () => {
                 callback();
             });
-        }else{
+        } else {
             callback();
         }
-        
+
     }
-    
+
     /**
      * Load the content
      * 
      * @returns {undefined}
      */
-    loadContent(setUrl = false,  retries = 0)
-    {       
+    loadContent(setUrl = false, retries = 0)
+    {
         let url = setUrl ? setUrl : this.url(`load/content`);
         this.pageFolders = 1;
         this.pageFiles = 1;
         this.domContent.html(this.loader());
         $.get(url, (response) => {
-            
+
             this.domContent.html(response);
             this.loadFolders(() => {
                 this.loadFiles(() => {
                     this.setContentPlugins();
                 });
             });
-            
+
         }).fail(() => {
-            if(retries < 2){
+            if (retries < 2) {
                 this.loadContent(setUrl, retries + 1);
             }
-        });;
+        });
+        ;
     }
-    
+
+    /**
+     * Load the content with new path
+     * 
+     * @param {type} path
+     * @param {type} driver
+     * @returns {undefined}
+     */
+    load(path = "", driver = false)
+    {
+            
+        if (driver) {
+            $(`.drive[data-slug="${driver}"]`).trigger('click');
+        }
+        this.setElements();
+        this.domPackage.data('start', true);
+            
+        this.loadContent(
+            this.setUrl('load/content', path)
+        );
+    }
+
     /**
      * Load the folders
      * 
@@ -304,21 +336,21 @@ class FileManager
     loadFolders(callback = null, retries = 0)
     {
         this.domPackage.find('.folders').append(this.loader());
-        
+
         $.get(this.url('get/folders'), (response) => {
-           this.domPackage.find('.folders').append(response); 
-           $('.folders .breeding-rhombus-spinner').remove();
-           this.checkSizes();
-           if(callback){
-               return callback();
-           }
+            this.domPackage.find('.folders').append(response);
+            $('.folders .breeding-rhombus-spinner').remove();
+            this.checkSizes();
+            if (callback) {
+                return callback();
+            }
         }).fail(() => {
-            if(retries < 2){
+            if (retries < 2) {
                 this.loadFolders(callback, retries + 1);
             }
         });
     }
-    
+
     /**
      * Load the files
      * 
@@ -328,19 +360,19 @@ class FileManager
     {
         this.domPackage.find('.files').append(this.loader());
         $.get(this.url('get/files'), (response) => {
-           this.domPackage.find('.files').append(response); 
-           $('.files .breeding-rhombus-spinner').remove();
-           this.checkSizes();
-           if(callback){
-               return callback();
-           }
+            this.domPackage.find('.files').append(response);
+            $('.files .breeding-rhombus-spinner').remove();
+            this.checkSizes();
+            if (callback) {
+                return callback();
+            }
         }).fail(() => {
-            if(retries < 2){
+            if (retries < 2) {
                 this.loadFiles(callback, retries + 1);
             }
         });
     }
-    
+
     /**
      * Set the plugins when the content is loaded
      * 
@@ -349,13 +381,13 @@ class FileManager
     setContentPlugins()
     {
         $('.nu-context-menu').not(':first').remove();
-        
+
         feather.replace();
 
         $('#package-content .files').selectable({
             filter: ".file,.folder,.load-more",
             cancel: ".file,.folder,.load-more",
-            start : () => {
+            start: () => {
                 $(document).trigger('click');
             },
             classes: {
@@ -363,7 +395,7 @@ class FileManager
             }
         });
     }        
-    
+
     /**
      * Set the required dom elements
      * 
@@ -376,7 +408,7 @@ class FileManager
         this.domContent = $('#package-content');
         this.domDetails = $('#package-details');
     }
-    
+
     /**
      * Returns the full url
      * 
@@ -385,22 +417,22 @@ class FileManager
      * @returns {String}
      */
     url(path, addition = false)
-    {     
+    {
         let currentPath = this.currentPath ? this.currentPath : $('.sidebar-button.active').data('slug');
-        
-        this.currentPath = addition ? currentPath+"/"+addition : currentPath;
-        
+
+        this.currentPath = addition ? currentPath + "/" + addition : currentPath;
+
         let url = this.domPackage.data('url') ? this.domPackage.data('url') : location.href;
-        
+
         let split = url.split('?');
-        
+
         url = `${split[0]}/${path}${split.length > 1 ? `?${split[1]}` : ``}`;
 
         let mark = url.includes('?') ? '&' : '?';
-                
+
         return `${url}${mark}path=${this.currentPath}&pageFolders=${this.pageFolders}&pageFiles=${this.pageFiles}`;
     }
-    
+
     /**
      * Reset the url
      * 
@@ -411,10 +443,10 @@ class FileManager
     setUrl(path, addition = false)
     {
         this.currentPath = $('.sidebar-button.active').data('slug');
-        
+
         return this.url(path, addition);
     }
-    
+
     /**
      * Return a new loader
      * 
@@ -433,7 +465,7 @@ class FileManager
         </div>
         `;
     }
-    
+
     /**
      * Find translation key
      * 
@@ -442,12 +474,12 @@ class FileManager
      */
     trans(key)
     {
-        if(this.config.trans[key]){
+        if (this.config.trans[key]) {
             return this.config.trans[key];
         }
         return key;
     }
-    
+
     /**
      * Generate unique id
      * 
@@ -464,7 +496,7 @@ class FileManager
         s[8] = s[13] = s[18] = s[23] = "-";
         return s.join("");
     }
-    
+
     /**
      * Format butes to read
      * 
@@ -473,7 +505,8 @@ class FileManager
      * @returns {String}
      */
     formatBytes(bytes, decimals = 2) {
-        if (bytes === 0) return '0 Bytes';
+        if (bytes === 0)
+            return '0 Bytes';
 
         const k = 1024;
         const dm = decimals < 0 ? 0 : decimals;
@@ -483,9 +516,29 @@ class FileManager
 
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     }
-    
+
+    /**
+     * Set a checker. Retry every {duration} till condition is true
+     * 
+     * @type @var;check|Boolean
+     */
+    check(condition = false, closure, duration = 400, counter = 0)
+    {
+        $(document).ready(() => {
+            if (condition) {
+                closure();
+            } else {
+                if (counter > 10) {
+                    console.error(`the ${closure} could not be loaded after 10 retries.`);
+                    return;
+                }
+                setTimeout(() => {
+                    this.check(condition, closure, duration, counter + 1);
+                }, duration);
+            }
+        });
+    }
 }
 
-window.FileManager = new FileManager;
-
-export default FileManager;
+window.filemanager = new FileManager;
+export default filemanager;

@@ -1,4 +1,5 @@
-<div id="package-filemanager" data-modal="{{ $modal ? "true" : "false" }}" data-url="{{ route(config('laravel-filemanager.prefix')) }}">
+<link rel="stylesheet" href="{{ $css }}" media="screen">
+<div id="package-filemanager" data-start="{{ $loadOnStartUp }}" data-modal="{{ $modal ? "true" : "false" }}" data-url="{{ route(config('laravel-filemanager.prefix')) }}">
 
 
     <div id='package-sidebar'>
@@ -60,5 +61,10 @@
     </div>
 
 </div>
+<!--<script src="{{ $script }}"></script>-->
 
-
+<script type="text/javascript" defer>   
+    if(typeof $ !== 'undefined' && typeof filemanager === 'undefined'){
+        $.getScript("{{ $script }}");
+    }
+</script>

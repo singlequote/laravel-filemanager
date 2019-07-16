@@ -1,5 +1,4 @@
 <?php
-
 namespace SingleQuote\FileManager;
 
 use SingleQuote\FileManager\Controllers\FoldersController;
@@ -10,46 +9,42 @@ use Storage;
 use File;
 use Auth;
 
-class FileManager 
+class FileManager
 {
 
-    
     protected $assetPath;
     protected $userModel;
     protected $script;
     protected $modal;
     protected $css;
-    
-    
-    
+
     /**
      * Constructor
      *
      */
-    public function __construct() 
+    public function __construct()
     {
         $this->assetPath = "vendor/laravel-filemanager/";
         $this->userModel = config('auth.providers.users.model');
         $this->css = file_exists(public_path("{$this->assetPath}filemanager.min.css")) ? asset("{$this->assetPath}filemanager.min.css") : false;
         $this->script = file_exists(public_path("{$this->assetPath}filemanager.min.js")) ? asset("{$this->assetPath}filemanager.min.js") : false;
-        
     }
-    
+
     /**
      * Set the access variables for the drivers
      * 
      */
-    private function setDriversAccess() 
+    private function setDriversAccess()
     {
         $this->myDrive = $this->config('my_drive') && Auth::check();
         $this->sharedDrive = $this->config('shared_drive') && $this->myDrive;
         $this->publicDrive = $this->config('public_drive');
-        
+
         if ($this->config('require_authentication_public_drive', false) && !Auth::check()) {
             $this->publicDrive = false;
         }
     }
-    
+
     /**
      * Return a config value
      *
@@ -57,7 +52,7 @@ class FileManager
      * @param mixed $default
      * @return mixed
      */
-    public function config(string $name, $default = false) 
+    public function config(string $name, $default = false)
     {
         return config("laravel-filemanager.$name", $default);
     }
@@ -70,28 +65,30 @@ class FileManager
     public function index(Request $request)
     {
         $this->setDriversAccess();
-        
+
         $activeDriver = $this->setActiveDriver($request);
-        
+
         if (!$this->myDrive && !$this->publicDrive) {
             return redirect()->route($this->config('redirect_not_authenticated', 'login'));
         }
 
         $driversSize = $this->getDriversSize();
         $view = $this->modal ? 'modal' : 'index';
+
         return view("laravel-filemanager::$view")->with([
-            'activeDrive' => $activeDriver,
-            'css' => $this->css ? $this->css : route(config('laravel-filemanager.prefix'))."/laravel-datatables-css",
-            'script' => $this->script ? $this->script : route(config('laravel-filemanager.prefix'))."/laravel-datatables-js",
-            'myDrive' => $this->myDrive,
-            'sharedDrive' => $this->sharedDrive,
-            'publicDrive' => $this->publicDrive,
-            'driversSize' => $driversSize ?? 0,
-            'modal' => $this->modal,
-            'maxUpload' => $this->config('max_upload_drive', false)
+                'activeDrive' => $activeDriver,
+                'css' => $this->css ? $this->css : route(config('laravel-filemanager.prefix')) . "/laravel-datatables-css",
+                'script' => $this->script ? $this->script : route(config('laravel-filemanager.prefix')) . "/laravel-datatables-js",
+                'myDrive' => $this->myDrive,
+                'sharedDrive' => $this->sharedDrive,
+                'publicDrive' => $this->publicDrive,
+                'driversSize' => $driversSize ?? 0,
+                'modal' => $this->modal,
+                'maxUpload' => $this->config('max_upload_drive', false),
+                "loadOnStartUp" => $request->get('load-on-startup', "true")
         ]);
     }
-    
+
     /**
      * Set the modal attribute to true
      * 
@@ -100,10 +97,10 @@ class FileManager
     public function modal(Request $request)
     {
         $this->modal = true;
-        
+
         return $this->index($request);
     }
-    
+
     /**
      * Get the size of a driver
      * 
@@ -114,14 +111,14 @@ class FileManager
     {
         $driversPath = $this->pathByDriverName($driver);
         $path = $this->addPath($driversPath);
-        
+
         $file_size = 0;
-        if(File::isDirectory($path)){
-            foreach( File::allFiles($path) as $file){
+        if (File::isDirectory($path)) {
+            foreach (File::allFiles($path) as $file) {
                 $file_size += $file->getSize();
             }
         }
-        
+
         return $file_size;
     }
 
@@ -131,7 +128,7 @@ class FileManager
      * @param Request $request
      * @return string
      */
-    private function setActiveDriver(Request $request) 
+    private function setActiveDriver(Request $request)
     {
         $default = $this->myDrive ? 'drive' : false;
 
@@ -147,12 +144,12 @@ class FileManager
      * 
      * @return \Illuminate\Http\JsonResponse
      */
-    public function loadConfigurations()
+    public function loadConfigurations(Request $request)
     {
         return response()->json([
-            "_token" => csrf_token(),
-            "mediaUrl" => route($this->config("media.prefix", "media"), ""),
-            "trans" => __('filemanager::laravel-filemanager')
+                "_token" => csrf_token(),
+                "mediaUrl" => route($this->config("media.prefix", "media"), ""),
+                "trans" => __('filemanager::laravel-filemanager')
         ]);
     }
 
@@ -162,7 +159,7 @@ class FileManager
      * @param Request $request
      * @return mixed
      */
-    public function loadContent(Request $request) 
+    public function loadContent(Request $request)
     {
         $this->setDriversAccess();
 
@@ -192,20 +189,20 @@ class FileManager
         if ((!$request->user() || !$this->myDrive) && $driver === 'my drive') {
             return $this->loadDrive($request, 'public drive');
         }
-        
+
         $path = $this->getPathByDrive($request);
-                
+
         $folders = FoldersController::setDriver($path)
                 ->request($request)->count();
-        
+
         $files = FilesController::setDriver($path)
                 ->request($request)->count();
 
         return view("laravel-filemanager::content")->with([
-            'title' => __("filemanager::laravel-filemanager.$driver"),
-            'breadcrumb' => $this->createBreadCrumb($request),
-            'files' => $files,
-            'folders' => $folders
+                'title' => __("filemanager::laravel-filemanager.$driver"),
+                'breadcrumb' => $this->createBreadCrumb($request),
+                'files' => $files,
+                'folders' => $folders
         ]);
     }
 
@@ -218,12 +215,12 @@ class FileManager
     public function getFiles(Request $request)
     {
         $files = FilesController::setDriver($this->getPathByDrive($request))
-                ->request($request, $this->config('pagination_results_files', null), $request->get('pageFiles', null))
-                ->make();
+            ->request($request, $this->config('pagination_results_files', null), $request->get('pageFiles', null))
+            ->make();
 
         return view("laravel-filemanager::files")->with(compact('files'));
     }
-    
+
     /**
      * Load the folders
      * 
@@ -231,11 +228,11 @@ class FileManager
      * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
      */
     public function getFolders(Request $request)
-    { 
+    {
         $folders = FoldersController::setDriver($this->getPathByDrive($request))
-               ->request($request, $this->config('pagination_results_folders', null), $request->get('pageFolders', null))
-                ->make();
-        
+            ->request($request, $this->config('pagination_results_folders', null), $request->get('pageFolders', null))
+            ->make();
+
         return view("laravel-filemanager::folders")->with(compact('folders'));
     }
 
@@ -245,25 +242,25 @@ class FileManager
      * @param array $structure
      * @return array
      */
-    private function createBreadCrumb(Request $request): array 
-    {      
+    private function createBreadCrumb(Request $request): array
+    {
         $path = $this->getStructure($request);
-        if(!strlen($path)){
+        if (!strlen($path)) {
             return [];
         }
-        
-        $explode    = explode('/', $path);
+
+        $explode = explode('/', $path);
         $breadcrumb = [];
-        $previous   = "";
-        
+        $previous = "";
+
         foreach ($explode as $index => $key) {
             $previous .= "$key";
             $config = FoldersController::getConfig(
-                Storage::disk($this->config("disk", "local"))->path($this->config('path', 'media')."/$this->drivePath/$previous")
+                    Storage::disk($this->config("disk", "local"))->path($this->config('path', 'media') . "/$this->drivePath/$previous")
             );
-            
-            $previous .= "/";         
-            
+
+            $previous .= "/";
+
             $breadcrumb[] = [
                 'path' => $config->path,
                 'name' => $config->name
@@ -279,11 +276,11 @@ class FileManager
      * @param Request $request
      * @return string
      */
-    public function getPathByDrive(Request $request): string 
-    {        
+    public function getPathByDrive(Request $request): string
+    {
         return "{$this->getDriversPath($request)}/{$this->getStructure($request)}";
     }
-    
+
     /**
      * Get the path of the driver
      * 
@@ -307,14 +304,14 @@ class FileManager
 
         abort(503);
     }
-    
+
     /**
      * Get the path by the name of the driver
      * 
      * @param string $driver
      * @return string
      */
-    public function pathByDriverName(string $driver) : string
+    public function pathByDriverName(string $driver): string
     {
         if ($driver === 'drive') {
             $this->drivePath = "my-drive/" . md5(Auth::id());
@@ -330,10 +327,10 @@ class FileManager
             $this->drivePath = "shared-drive/" . md5(Auth::id());
             return $this->parseUrl($this->drivePath);
         }
-        
+
         return false;
     }
-    
+
     /**
      * Get the current path
      * 
@@ -343,7 +340,7 @@ class FileManager
     public function getStructure(Request $request)
     {
         $path = $this->parseUrl($request->path);
-        
+
         if (Str::startsWith($path, 'drive')) {
             return $this->parseUrl(Str::after($path, 'drive'));
         }
@@ -353,7 +350,7 @@ class FileManager
         if (Str::startsWith($path, 'shared')) {
             return $this->parseUrl(Str::after($path, 'shared'));
         }
-        
+
         abort(503);
     }
 
@@ -363,13 +360,13 @@ class FileManager
      * @param Request $request
      * @return string
      */
-    public function makePath(Request $request, string $add = "") : string
+    public function makePath(Request $request, string $add = ""): string
     {
         $path = $this->getPathByDrive($request);
-        
+
         return $this->addPath($path, $add);
     }
-    
+
     /**
      * Return the full path from storage
      * 
@@ -389,7 +386,7 @@ class FileManager
      * @param string $url
      * @return string
      */
-    public function parseUrl(string $url, $withoutDriver = false) 
+    public function parseUrl(string $url, $withoutDriver = false)
     {
         if ($withoutDriver) {
             $url = str_replace(['drive', 'public', 'shared'], '', $url);
@@ -402,7 +399,7 @@ class FileManager
         $route = implode($result, '/');
         return Str::startsWith($route, 'var') ? "/$route" : $route;
     }
-    
+
     /**
      * Get the required script
      * 
@@ -415,7 +412,7 @@ class FileManager
         $response->header('Content-Type', 'application/javascript');
         return $response;
     }
-    
+
     /**
      * Get the stylesheet
      * 
@@ -428,5 +425,4 @@ class FileManager
         $response->header('Content-Type', 'text/css');
         return $response;
     }
-    
 }
