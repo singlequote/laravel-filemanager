@@ -31,7 +31,7 @@ class FilesController extends \SingleQuote\FileManager\FileManager
             abort(503);
         }
                 
-        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:files'])->remember('laravel-filemanager:files-'.Str::slug($this->driver), 3600, function(){
+        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:files'])->remember("fi".md5($this->driver), 3600, function(){
             $items = File::files($this->getPath());
             $files = [];
             foreach ($items as $item) {
