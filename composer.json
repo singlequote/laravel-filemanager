@@ -13,9 +13,9 @@
     "authors": [
         {
             "name": "Wim Pruiksma",
-            "email": "wim@acfbentveld.nl",
-            "homepage": "https://acfbentveld.nl/",
-            "role": "Lead developer"
+            "email": "wim@quotec.nl",
+            "homepage": "https://quotec.nl/",
+            "role": "Senior Lead developer"
         }
     ],
     "require": {
