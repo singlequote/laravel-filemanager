@@ -30,8 +30,8 @@ class FilesController extends \SingleQuote\FileManager\FileManager
         if (!File::isDirectory($this->getPath())) {
             abort(503);
         }
-        
-        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:files'])->remember('laravel-filemanager:files-'.base64_encode($this->getPath()), 3600, function(){
+                
+        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:files'])->remember('laravel-filemanager:files-'.Str::slug($this->driver), 3600, function(){
             $items = File::files($this->getPath());
             $files = [];
             foreach ($items as $item) {
@@ -43,6 +43,7 @@ class FilesController extends \SingleQuote\FileManager\FileManager
                     $files[] = $object;
                 }
             }
+            
             return $files;
         });
         
