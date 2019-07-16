@@ -7,7 +7,6 @@ use Illuminate\Support\Str;
 use Storage;
 use File;
 
-
 /**
  * Description of FilesController
  *
@@ -15,43 +14,44 @@ use File;
  */
 class FoldersController extends \SingleQuote\FileManager\FileManager
 {
+
     use FileFolderTrait;
-    
+
     /**
      * Load the folders raw
      * 
      * @return array
      */
-    private function load() : array
+    private function load(): array
     {
         if (!File::isDirectory($this->getPath())) {
             abort(503);
         }
-        
+
         $items = File::files($this->getPath());
         $folders = [];
         foreach ($items as $item) {
             $content = File::get($item->getPathname(), false);
             $object = json_decode($content);
-            if($object && isset($object->type) && $object->type === 'folder'){
+            if ($object && isset($object->type) && $object->type === 'folder') {
                 $folders[] = $object;
-            }elseif($object && !Str::contains($object->basepath, '.')){
-				$folders[] = $object;
-			}
+            } elseif ($object && !Str::contains($object->basepath, '.')) {
+                $folders[] = $object;
+            }
         }
-        
+
         return $folders;
     }
-    
+
     /**
      * Delete a folder and its contents
      * 
      * @param Request $request
      * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
      */
-    public function delete(Request $request) 
+    public function delete(Request $request)
     {
-        $path   = $this->getPathByDrive($request);
+        $path = $this->getPathByDrive($request);
         $config = $this->config('path') . "/$path/$request->item.fmc";
 
         if (Storage::disk($this->config('disk', 'local'))->exists($config)) {
@@ -60,7 +60,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
             Storage::disk($this->config('disk', 'local'))->delete($config);
 
             ShareController::delete($folder);
-            
+
             return response("", 204);
         }
 
@@ -72,10 +72,10 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
      * @param Request $request
      * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
      */
-    public function create(Request $request) 
+    public function create(Request $request)
     {
-        $id         = Str::uuid();
-        $path       = $this->getPathByDrive($request);
+        $id = Str::uuid();
+        $path = $this->getPathByDrive($request);
         $folderPath = $this->parseUrl("$path/$id");
 
         Storage::disk($this->config('disk', 'local'))->makeDirectory("{$this->config('path')}/$folderPath");
@@ -95,15 +95,49 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
 
         return response("", 204);
     }
-    
+
+    /**
+     * Create directory
+     * Return uuid when success
+     * 
+     * @param string $driver
+     * @param string $path
+     * @return string
+     */
+    public static function createDirectory(string $driver, string $path): string
+    {
+        $explodePath = explode('/', $path);
+        $name = array_pop($explodePath);
+        $id = Str::uuid();
+        $class = new FoldersController;
+        $driversPath = $class->pathByDriverName($driver);
+        $folderPath = $class->parseUrl("$driversPath/" . implode($explodePath, '/') . "/$id");
+
+        $data = [
+            'type' => "folder",
+            'basepath' => $class->parseUrl($folderPath),
+            'path' => $class->parseUrl(implode($explodePath, '/') . "/$id", true),
+            'id' => "$id",
+            'name' => $name,
+            'uploader' => \Auth::user() ? \Auth::user()->toArray() : null,
+            'created_at' => now()->format('Y-m-d H:i:s'),
+            'updated_at' => now()->format('Y-m-d H:i:s')
+        ];
+
+        Storage::disk($class->config('disk', 'local'))->put("{$class->config('path')}/$folderPath.fmc", json_encode($data));
+        Storage::disk($class->config('disk', 'local'))->makeDirectory("{$class->config('path')}/$folderPath");
+
+        return $id;
+    }
+
     /**
      * Return the file details
      * 
      * @param Request $request
      * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
      */
-    public function details(Request $request) 
-    {       
+    public function details(Request $request)
+    {
         $config = $this->parseConfig($this->makePath($request, $request->item));
 
         if ($config) {
@@ -115,21 +149,21 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
 
         abort(403);
     }
-    
+
     /**
      * Rename the file and return the config
      * 
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function rename(Request $request) 
+    public function rename(Request $request)
     {
         $config = $this->parseConfig($this->makePath($request, $request->item));
 
         if ($config) {
             $config->name = $request->rename;
             $config->updated_at = now()->format('Y-m-d H:i:s');
-            
+
             $this->writeConfig($config);
 
             return response()->json($config);
@@ -137,5 +171,4 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
 
         abort(403);
     }
-
 }
