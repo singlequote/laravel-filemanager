@@ -109,17 +109,19 @@ class FileManager
      */
     private function getDriversSize(string $driver = "drive")
     {
-        $driversPath = $this->pathByDriverName($driver);
-        $path = $this->addPath($driversPath);
+        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:disk-size'])->remember("laravel-filemanager:disk-size-$driver", 3600, function() use($driver){
+            $driversPath = $this->pathByDriverName($driver);
+            $path = $this->addPath($driversPath);
 
-        $file_size = 0;
-        if (File::isDirectory($path)) {
-            foreach (File::allFiles($path) as $file) {
-                $file_size += $file->getSize();
+            $file_size = 0;
+            if (File::isDirectory($path)) {
+                foreach (File::allFiles($path) as $file) {
+                    $file_size += $file->getSize();
+                }
             }
-        }
 
-        return $file_size;
+            return $file_size;
+        });
     }
 
     /**

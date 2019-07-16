@@ -1,6 +1,7 @@
 <?php
 namespace SingleQuote\FileManager\Controllers;
 
+use SingleQuote\FileManager\Observers\FolderObserver;
 use SingleQuote\FileManager\Traits\FileFolderTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -27,20 +28,22 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
         if (!File::isDirectory($this->getPath())) {
             abort(503);
         }
-
-        $items = File::files($this->getPath());
-        $folders = [];
-        foreach ($items as $item) {
-            $content = File::get($item->getPathname(), false);
-            $object = json_decode($content);
-            if ($object && isset($object->type) && $object->type === 'folder') {
-                $folders[] = $object;
-            } elseif ($object && !Str::contains($object->basepath, '.')) {
-                $folders[] = $object;
+        
+        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:folders'])->remember('laravel-filemanager:folders-'. base64_encode($this->getPath()), 3600, function(){
+            $items = File::files($this->getPath());
+            $folders = [];
+            foreach ($items as $item) {
+                $content = File::get($item->getPathname(), false);
+                $object = json_decode($content);
+                if ($object && isset($object->type) && $object->type === 'folder') {
+                    $folders[] = $object;
+                } elseif ($object && !Str::contains($object->basepath, '.')) {
+                    $folders[] = $object;
+                }
             }
-        }
 
-        return $folders;
+            return $folders;
+        });
     }
 
     /**
@@ -60,7 +63,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
             Storage::disk($this->config('disk', 'local'))->delete($config);
 
             ShareController::delete($folder);
-
+            FolderObserver::delete($folder);
             return response("", 204);
         }
 
@@ -92,7 +95,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
         ];
 
         Storage::disk($this->config('disk', 'local'))->put("{$this->config('path')}/$folderPath.fmc", json_encode($data));
-
+        FolderObserver::create((object) $data);
         return response("", 204);
     }
 
@@ -126,7 +129,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
 
         Storage::disk($class->config('disk', 'local'))->put("{$class->config('path')}/$folderPath.fmc", json_encode($data));
         Storage::disk($class->config('disk', 'local'))->makeDirectory("{$class->config('path')}/$folderPath");
-
+        FolderObserver::create((object) $data);
         return $id;
     }
 
@@ -165,7 +168,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
             $config->updated_at = now()->format('Y-m-d H:i:s');
 
             $this->writeConfig($config);
-
+            FolderObserver::update((object) $config);
             return response()->json($config);
         }
 
