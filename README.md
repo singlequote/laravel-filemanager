@@ -36,7 +36,7 @@ The package caches the files with new formats (when changed) in the public folde
 ### To do list
 
  - [ ] Docs
- - [ ] Sharing folders by link
+ - [x] Sharing folders by link
  - [x] Sharing files by link
  - [ ] Update design
 
