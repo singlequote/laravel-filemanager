@@ -29,7 +29,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
             abort(503);
         }
         
-        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:folders'])->remember('laravel-filemanager:folders-'. base64_encode($this->getPath()), 3600, function(){
+        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:folders'])->remember('laravel-filemanager:folders-'. Str::slug($this->driver), 3600, function(){
             $items = File::files($this->getPath());
             $folders = [];
             foreach ($items as $item) {
@@ -41,7 +41,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
                     $folders[] = $object;
                 }
             }
-
+            
             return $folders;
         });
     }
