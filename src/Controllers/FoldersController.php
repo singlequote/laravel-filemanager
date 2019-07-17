@@ -28,22 +28,22 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
         if (!File::isDirectory($this->getPath())) {
             abort(503);
         }
-        
-        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:folders'])->remember("fo".md5($this->driver), 3600, function(){
-            $items = File::files($this->getPath());
-            $folders = [];
-            foreach ($items as $item) {
-                $content = File::get($item->getPathname(), false);
-                $object = json_decode($content);
-                if ($object && isset($object->type) && $object->type === 'folder') {
-                    $folders[] = $object;
-                } elseif ($object && !Str::contains($object->basepath, '.')) {
-                    $folders[] = $object;
+
+        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:folders'])->remember("fo" . md5($this->driver), 3600, function() {
+                $items = File::files($this->getPath());
+                $folders = [];
+                foreach ($items as $item) {
+                    $content = File::get($item->getPathname(), false);
+                    $object = json_decode($content);
+                    if ($object && isset($object->type) && $object->type === 'folder') {
+                        $folders[] = $object;
+                    } elseif ($object && !Str::contains($object->basepath, '.')) {
+                        $folders[] = $object;
+                    }
                 }
-            }
-            
-            return $folders;
-        });
+
+                return $folders;
+            });
     }
 
     /**
@@ -62,7 +62,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
 
             $fullPath = Storage::disk($this->config('disk', 'local'))->path($this->config('path') . "/$path/$request->item");
             File::deleteDirectory($fullPath);
-            
+
             Storage::disk($this->config('disk', 'local'))->delete($config);
 
             ShareController::delete($folder);
@@ -72,7 +72,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
 
         abort(403);
     }
-    
+
     /**
      * Return the files of a folder
      * As config
@@ -81,18 +81,18 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
      * @param string $path
      * @return array
      */
-    public static function files(string $driver, string $path) : array
+    public static function files(string $driver, string $path): array
     {
         $class = new FoldersController;
         $driversPath = $class->pathByDriverName($driver);
         $folderPath = $class->parseUrl("$driversPath/$path");
-        
+
         $fullPath = Storage::disk($class->config('disk', 'local'))->path($class->config('path') . "/$folderPath");
-        
+
         $items = File::files($fullPath);
         $files = [];
-        foreach($items as $file){
-            if(Str::endsWith($file->getRealPath(), '.fmc')){
+        foreach ($items as $file) {
+            if (Str::endsWith($file->getRealPath(), '.fmc')) {
                 $files[] = $class->parseConfig(Str::before($file->getRealPath(), '.fmc'));
             }
         }
@@ -203,7 +203,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
 
         abort(403);
     }
-    
+
     /**
      * Check if directory exists
      * 
@@ -216,7 +216,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
         $class = new FoldersController;
         $driversPath = $class->pathByDriverName($driver);
         $folderPath = $class->parseUrl("$driversPath/$path");
-        
+
         return Storage::disk($class->config('disk', 'local'))->exists("{$class->config('path')}/$folderPath.fmc");
     }
 }
