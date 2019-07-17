@@ -44,5 +44,16 @@ class FolderObserver
         ])->flush();
     }
     
-    
+    /**
+     * Observer delete
+     * 
+     * @param object $config
+     */
+    public static function shared(object $config)
+    {
+        cache()->tags([
+            'laravel-filemanager:folders',
+            'laravel-filemanager:disk-size'
+        ])->flush();
+    }
 }
