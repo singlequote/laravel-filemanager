@@ -61,7 +61,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
             $folder = json_decode(Storage::disk($this->config('disk', 'local'))->get($config));
 
             $fullPath = Storage::disk($this->config('disk', 'local'))->path($this->config('path') . "/$path/$request->item");
-            \File::deleteDirectory($fullPath);
+            File::deleteDirectory($fullPath);
             
             Storage::disk($this->config('disk', 'local'))->delete($config);
 
@@ -71,6 +71,32 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
         }
 
         abort(403);
+    }
+    
+    /**
+     * Return the files of a folder
+     * As config
+     * 
+     * @param string $driver
+     * @param string $path
+     * @return array
+     */
+    public static function files(string $driver, string $path) : array
+    {
+        $class = new FoldersController;
+        $driversPath = $class->pathByDriverName($driver);
+        $folderPath = $class->parseUrl("$driversPath/$path");
+        
+        $fullPath = Storage::disk($class->config('disk', 'local'))->path($class->config('path') . "/$folderPath");
+        
+        $items = File::files($fullPath);
+        $files = [];
+        foreach($items as $file){
+            if(Str::endsWith($file->getRealPath(), '.fmc')){
+                $files[] = $class->parseConfig(Str::before($file->getRealPath(), '.fmc'));
+            }
+        }
+        return $files;
     }
 
     /**
