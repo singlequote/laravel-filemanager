@@ -1,10 +1,9 @@
 <?php
-
 namespace SingleQuote\FileManager\Observers;
 
 class FileObserver
 {
-    
+
     /**
      * Create observer
      * 
@@ -13,11 +12,11 @@ class FileObserver
     public static function create(object $config)
     {
         cache()->tags([
-            'laravel-filemanager:files',  
+            'laravel-filemanager:files',
             'laravel-filemanager:disk-size'
         ])->flush();
     }
-    
+
     /**
      * Update observer
      * 
@@ -26,11 +25,11 @@ class FileObserver
     public static function update(object $config)
     {
         cache()->tags([
-            'laravel-filemanager:files',  
+            'laravel-filemanager:files',
             'laravel-filemanager:disk-size'
         ])->flush();
     }
-    
+
     /**
      * Observer delete
      * 
@@ -39,9 +38,21 @@ class FileObserver
     public static function delete(object $config)
     {
         cache()->tags([
-            'laravel-filemanager:files',  
+            'laravel-filemanager:files',
             'laravel-filemanager:disk-size'
         ])->flush();
     }
-    
+
+    /**
+     * Observer delete
+     * 
+     * @param object $config
+     */
+    public static function shared(object $config)
+    {
+        cache()->tags([
+            'laravel-filemanager:files',
+            'laravel-filemanager:disk-size'
+        ])->flush();
+    }
 }
