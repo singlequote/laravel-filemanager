@@ -1,5 +1,4 @@
 <?php
-
 namespace SingleQuote\FileManager\Controllers;
 
 use SingleQuote\FileManager\Controllers\ShareController;
@@ -15,7 +14,7 @@ use File;
  *
  * @author WPruiksma
  */
-class FilesController extends \SingleQuote\FileManager\FileManager 
+class FilesController extends \SingleQuote\FileManager\FileManager
 {
 
     use FileFolderTrait;
@@ -25,28 +24,27 @@ class FilesController extends \SingleQuote\FileManager\FileManager
      * 
      * @return array
      */
-    private function load(): array 
+    private function load(): array
     {
         if (!File::isDirectory($this->getPath())) {
             abort(503);
         }
-                
-        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:files'])->remember("fi".md5($this->driver), 3600, function(){
-            $items = File::files($this->getPath());
-            $files = [];
-            foreach ($items as $item) {
-                $content = File::get($item->getPathname(), false);
-                $object = json_decode($content);
-                if($object && isset($object->type) && $object->type === 'file'){
-                    $files[] = $object;
-                }elseif($object && Str::contains($object->basepath, '.')){
-                    $files[] = $object;
+
+        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:files'])->remember("fi" . md5($this->driver), 3600, function() {
+                $items = File::files($this->getPath());
+                $files = [];
+                foreach ($items as $item) {
+                    $content = File::get($item->getPathname(), false);
+                    $object = json_decode($content);
+                    if ($object && isset($object->type) && $object->type === 'file') {
+                        $files[] = $object;
+                    } elseif ($object && Str::contains($object->basepath, '.')) {
+                        $files[] = $object;
+                    }
                 }
-            }
-            
-            return $files;
-        });
-        
+
+                return $files;
+            });
     }
 
     /**
@@ -55,19 +53,19 @@ class FilesController extends \SingleQuote\FileManager\FileManager
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function rename(Request $request) 
+    public function rename(Request $request)
     {
         $config = $this->parseConfig($this->makePath($request, $request->item));
 
         if ($config) {
             $config->filename = $request->rename;
             $config->updated_at = now()->format('Y-m-d H:i:s');
-            
+
             $this->writeConfig($config);
             FileObserver::update($config);
             return response()->json($config);
         }
-        
+
         abort(403);
     }
 
@@ -85,7 +83,7 @@ class FilesController extends \SingleQuote\FileManager\FileManager
         $id = Str::uuid();
 
         $request->file('file')->storeAs(
-                $this->config('path', 'media') . "/$path", $id . "." . $file->getClientOriginalExtension(), $this->config('disk', 'local')
+            $this->config('path', 'media') . "/$path", $id . "." . $file->getClientOriginalExtension(), $this->config('disk', 'local')
         );
 
         $fileConfig = [
@@ -113,22 +111,21 @@ class FilesController extends \SingleQuote\FileManager\FileManager
      * @param Request $request
      * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
      */
-    public function details(Request $request) 
-    {       
-        
-        $config = cache()->tags(['laravel-filemanager', 'laravel-filemanager:files'])->remember("laravel-filemanager:file-$request->item", 3600, function() use($request){
+    public function details(Request $request)
+    {
+        $config = cache()->tags(['laravel-filemanager', 'laravel-filemanager:files'])->remember("laravel-filemanager:file-$request->item", 3600, function() use($request) {
             $config = $this->parseConfig($this->makePath($request, $request->item));
-            
+
             if ($config) {
 
                 $config->uploader = isset($config->uploader) ? $config->uploader->name : false;
                 $config->content = view('laravel-filemanager::types.details')->with(compact('config'))->render();
                 return $config;
             }
-            
+
             return false;
         });
-        
+
         return response()->json($config);
     }
 
@@ -138,18 +135,18 @@ class FilesController extends \SingleQuote\FileManager\FileManager
      * @param Request $request
      * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
      */
-    public function delete(Request $request) 
+    public function delete(Request $request)
     {
         $path = $this->getPathByDrive($request);
         $file = $this->config('path') . "/$path/$request->item.fmc";
 
         if (Storage::disk($this->config('disk', 'local'))->exists($file)) {
-            
+
             $config = json_decode(Storage::disk($this->config('disk', 'local'))->get($file));
-            
+
             Storage::disk($this->config('disk', 'local'))->delete($this->config('path') . "/$config->basepath");
             Storage::disk($this->config('disk', 'local'))->delete($file);
-            
+
             ShareController::delete($config);
             FileObserver::delete($config);
             return response("", 204);
@@ -157,5 +154,4 @@ class FilesController extends \SingleQuote\FileManager\FileManager
 
         abort(403);
     }
-
 }
