@@ -59,7 +59,10 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
 
         if (Storage::disk($this->config('disk', 'local'))->exists($config)) {
             $folder = json_decode(Storage::disk($this->config('disk', 'local'))->get($config));
-            Storage::disk($this->config('disk', 'local'))->delete($this->config('path') . "/$folder->basepath");
+
+            $fullPath = Storage::disk($this->config('disk', 'local'))->path($this->config('path') . "/$path/$request->item");
+            \File::deleteDirectory($fullPath);
+            
             Storage::disk($this->config('disk', 'local'))->delete($config);
 
             ShareController::delete($folder);
