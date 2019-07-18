@@ -151,7 +151,8 @@ class FileManager
         return response()->json([
                 "_token" => csrf_token(),
                 "mediaUrl" => route($this->config("media.prefix", "media"), ""),
-                "trans" => __('filemanager::laravel-filemanager')
+                "trans" => __('filemanager::laravel-filemanager'),
+                "user" => Auth::user()
         ]);
     }
 

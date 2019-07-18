@@ -1,6 +1,7 @@
 <?php
 namespace SingleQuote\FileManager\Controllers;
 
+use SingleQuote\FileManager\Controllers\ShareController;
 use SingleQuote\FileManager\Observers\FolderObserver;
 use SingleQuote\FileManager\Traits\FileFolderTrait;
 use Illuminate\Http\Request;
@@ -109,25 +110,42 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
         $id = Str::uuid();
         $path = $this->getPathByDrive($request);
         $folderPath = $this->parseUrl("$path/$id");
-
-        Storage::disk($this->config('disk', 'local'))->makeDirectory("{$this->config('path')}/$folderPath");
-
+        
         $data = [
             'type' => "folder",
             'basepath' => $this->parseUrl($folderPath),
             'path' => $this->parseUrl("$request->path/$id", true),
             'id' => "$id",
             'name' => $request->name,
-            'uploader' => $request->user() ? $request->user()->toArray() : null,
+            'uploader' => $request->user() ? ['id' => encrypt($request->user()->id), 'name' => $request->user()->name] : null,
             'created_at' => now()->format('Y-m-d H:i:s'),
             'updated_at' => now()->format('Y-m-d H:i:s')
         ];
-
+                
         Storage::disk($this->config('disk', 'local'))->put("{$this->config('path')}/$folderPath.fmc", json_encode($data));
+        Storage::disk($this->config('disk', 'local'))->makeDirectory("{$this->config('path')}/$folderPath");
+        
+        if(Str::startsWith($this->drivePath, 'shared')){
+            $this->createInShared($path, (object) $data);
+        }
+        
         FolderObserver::create((object) $data);
         return response("", 204);
     }
 
+    private function createInShared(string $path, object $data)
+    {
+        $parent = $this->getConfig(Storage::disk($this->config('disk', 'local'))->path("{$this->config('path')}/$path"));
+        
+        (new ShareController)->shareElement(
+            \Auth::user(), 
+            $data, 
+            $this->addPath($path, $data->id),
+            (array) $parent->shared->{\Auth::user()->id}->permissions,
+            $parent->id
+        );
+    }
+    
     /**
      * Create directory
      * Return uuid when success
@@ -174,7 +192,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
 
         if ($config) {
             $config->type = "folder";
-            $config->uploader = isset($config->uploader) ? $config->uploader->name : false;
+            $config->isOwner = \Auth::check() && $config->uploader && \Auth::id() === decrypt(optional($config->uploader)->id);
             $config->content = view('laravel-filemanager::types.details')->with(compact('config'))->render();
             return response()->json($config);
         }

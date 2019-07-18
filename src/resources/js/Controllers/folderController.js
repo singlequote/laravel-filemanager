@@ -9,7 +9,10 @@ class FolderController
     {
         this.FileManager = FileManager;
         this.box = FileManager.box;
+        this.locker = FileManager.locker;
         this.loadTriggers();
+        
+        this.timer;
     }
 
     /**
@@ -17,14 +20,14 @@ class FolderController
      * @returns {undefined}
      */
     loadTriggers()
-    {
-        $(document).on('click', '.folder', '.folder, .folder-button', (e) => {
-            this.show(e);
-            this.trigger(e);
-        });
-        
+    {       
         $(document).on('folder:details', '.folder, .folder-button', (e) => {
             this.show(e);
+        });
+        
+        $(document).on('folder:open', '.folder, .folder-button', (e) => {
+            this.timer = false;
+            this.open(e);
         });
         
         $(document).on('folder:edit', '.folder, .folder-button', (e) => {
@@ -36,12 +39,21 @@ class FolderController
         });
         
         $(document).on('dblclick', '.folder', (e) => {
-            let path = $(e.currentTarget).data('slug');
-            this.FileManager.loadContent(this.FileManager.setUrl('load/content', path));
-            setTimeout(() => {
-                this.FileManager.domDetails.find('.button').remove();
-            },500);
-            
+            clearTimeout(this.timer);
+            this.timer = false;
+            this.open(e);
+        });
+        
+        $(document).on('click', '.folder', '.folder, .folder-button', (e) => {
+            if(this.timer){
+                return false;
+            }
+            let element = $(e.currentTarget);
+            this.trigger(e);
+            this.timer = setTimeout(() => {
+                this.show(false, element);
+                this.timer = false;
+            },400);
         });
         
         $(document).on('folder:create', (e) => {
@@ -61,7 +73,7 @@ class FolderController
             $(e.currentTarget).remove();
             this.FileManager.pageFolders = this.FileManager.pageFolders + 1;
             this.FileManager.loadFolders(() => {
-//                this.FileManager.setContentPlugins();
+                //..
             });
         });
     }
@@ -81,6 +93,26 @@ class FolderController
 
         element.toggleClass('active');
     }
+    
+    /**
+     * Open folder when doubleclicked item
+     * 
+     * @param {type} e
+     * @returns {undefined}
+     */
+    open(e)
+    {
+        let path = $(e.currentTarget).data('slug');
+        $.post(this.FileManager.url('details/folder'), {_token: this.FileManager.config._token, item: $(e.currentTarget).data('id')}, (response) => {
+            this.FileManager.currentFolderConfig = response;
+        });
+        
+        this.FileManager.loadContent(this.FileManager.setUrl('load/content', path));
+
+        setTimeout(() => {
+            this.FileManager.domDetails.find('.button').remove();
+        },500);
+    }
 
     /**
      * 
@@ -93,8 +125,16 @@ class FolderController
 
         $.post(this.FileManager.url('details/folder'), {_token: this.FileManager.config._token, item: element.data('id')}, (response) => {
             this.FileManager.box.title = response.name;
-
             this.FileManager.box.content = response.content
+            
+            this.locker.cannot('edit', response, () => {
+                $(`.details-edit[data-id="${response.id}"]`).remove();
+            });
+            
+            this.locker.cannot('delete', response, () => {
+                $(`.details-delete[data-id="${response.id}"]`).remove();
+            });
+            
             this.FileManager.box.show();
             feather.replace();
             this.FileManager.replaceSize();
@@ -108,16 +148,17 @@ class FolderController
      */
     create(e)
     {
-        this.box.title = this.FileManager.trans('new folder');
-        this.box.content = `
-            <form id="addFolder">
-                <label>${this.FileManager.trans('folder name')}</label>
-                <input autocomplete="off" type="text" name="name" /><br><br>
-                <!--<button class="cancel button button-default button-small" type="button">${this.FileManager.trans('cancel')}</button>-->
-                <button class="button button-green button-small">${this.FileManager.trans('add folder')}</button>
-            </form>
-        `;
-        this.box.show();
+        this.locker.can('upload', false, () => {
+            this.box.title = this.FileManager.trans('new folder');
+            this.box.content = `
+                <form id="addFolder">
+                    <label>${this.FileManager.trans('folder name')}</label>
+                    <input autocomplete="off" type="text" name="name" /><br><br>
+                    <button class="button button-green button-small">${this.FileManager.trans('add folder')}</button>
+                </form>
+            `;
+            this.box.show();
+        });
     }
 
     /**
@@ -152,15 +193,14 @@ class FolderController
     edit(e, el = false)
     {
         let element = e ? $(e.currentTarget) : el;
-
-        $.post(this.FileManager.url('details/folder'), {_token: this.FileManager.config._token, item: element.data('id')}, (response) => {
+        
+        this.locker.can('edit', element.data('id'), (response) => {
             this.box.title = response.name;
             this.box.content = `
                 <form id="editFolder">
                     <input type="hidden" name="item" value="${response.id}">
                     <label>${this.FileManager.trans('filename')}</label>
                     <input type="text" name="rename" data-id="${element.data('id')}" value="${response.name}" /><br><br>
-                    <!--<button class="cancel button button-default button-small" type="button">${this.FileManager.trans('cancel')}</button>-->
                     <button class="button button-green button-small">${this.FileManager.trans('rename')}</button>
                 </form>
             `;
@@ -201,10 +241,12 @@ class FolderController
         $(`#package-content .file.active, #package-content .folder.active`).each((index, active) => {
             let element = $(active);
             let url = element.hasClass('folder') ? this.FileManager.url('delete/folder') : this.FileManager.url('delete/file');
-
-            $.post(url, {_method: "delete", _token: this.FileManager.config._token, item: element.data('id')}, () => {
-                element.hide('slow', () => {
-                    element.remove();
+            
+            this.locker.can('delete', element.data('id'), () => {
+                $.post(url, {_method: "delete", _token: this.FileManager.config._token, item: element.data('id')}, () => {
+                    element.hide('slow', () => {
+                        element.remove();
+                    });
                 });
             });
         });

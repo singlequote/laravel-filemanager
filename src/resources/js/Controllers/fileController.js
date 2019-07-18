@@ -8,6 +8,7 @@ class FileController
     constructor(FileManager)
     {
         this.FileManager = FileManager;
+        this.locker = FileManager.locker;
         this.box = FileManager.box;
         this.loadTriggers();
     }
@@ -25,6 +26,10 @@ class FileController
         
         $(document).on('file:details', '.file, .file-button', (e) => {
             this.show(e);
+        });
+        
+        $(document).on('file:open', '.file, .file-button', (e) => {
+            this.open(e);
         });
         
         $(document).on('file:edit', '.file, .file-button', (e) => {
@@ -87,9 +92,16 @@ class FileController
      */
     getConfig(e)
     {
-        return $.post(this.FileManager.url('details/file'), {_token: this.FileManager.config._token, item: $(e.currentTarget).data('id')}, (response) => {
+        $.post(this.FileManager.url('details/file'), {_token: this.FileManager.config._token, item: $(e.currentTarget).data('id')}, (response) => {
             $(document).trigger('laravel-filemanager:select', response);
-            return response;
+        });
+    }
+    
+    open(e, el = false)
+    {
+        let element = e ? $(e.currentTarget) : el;
+        this.locker.can('open', element.data('id'), (config) => {
+            window.open(`${this.FileManager.config.mediaUrl}/${config.basepath}`, '_blank');
         });
     }
 
@@ -106,6 +118,14 @@ class FileController
             this.box.title = response.filename;
 
             this.box.content = response.content
+            
+            this.locker.cannot('edit', response, () => {
+                $(`.details-edit[data-id="${response.id}"]`).remove();
+            });
+            this.locker.cannot('delete', response, () => {
+                $(`.details-delete[data-id="${response.id}"]`).remove();
+            });
+            
             this.box.show();
             feather.replace();
             this.FileManager.replaceSize();
@@ -118,7 +138,7 @@ class FileController
      * @returns {undefined}
      */
     create(e)
-    {
+    {     
         $('.filemanager-upload-filedialog').remove();
 
         let id = this.FileManager.unique();
@@ -172,7 +192,8 @@ class FileController
     {
         let element = e ? $(e.currentTarget) : el;
 
-        $.post(this.FileManager.url('details/file'), {_token: this.FileManager.config._token, item: element.data('id')}, (response) => {
+        this.locker.can('edit', element.data('id'), (response) => {
+            
             this.box.title = response.filename;
             this.box.content = `
                 <form id="editFile">
@@ -184,6 +205,7 @@ class FileController
                 </form>
             `;
             this.box.show();
+            
         });
     }
     

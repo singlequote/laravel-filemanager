@@ -37,5 +37,11 @@ return [
     "storage" => "Storage",
     "name" => "Name",
     "shared with" => "Shared with",
-    "remove the shared links" => "Remove the shared links"
+    "remove the shared links" => "Remove the shared links",
+    "can open" => "Can open",
+    "can edit" => "Can edit",
+    "can delete" => "Can delete",
+    "can upload" => "Can upload",
+    "permissions" => "Permissions",
+    "open" => "Open"
 ];

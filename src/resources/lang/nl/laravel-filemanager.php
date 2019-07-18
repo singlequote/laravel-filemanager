@@ -37,5 +37,11 @@ return [
     "storage" => "Opslag",
     "name" => "Naam",
     "shared with" => "Gedeeld met",
-    "remove the shared links" => "Verwijder gedeelde links"
+    "remove the shared links" => "Verwijder gedeelde links",
+    "can open" => "Kan bekijken",
+    "can edit" => "Kan bewerken",
+    "can delete" => "Kan verwijderen",
+    "can upload" => "Kan uploaden",
+    "permissions" => "Permissies",
+    "open" => "Openen"
 ];

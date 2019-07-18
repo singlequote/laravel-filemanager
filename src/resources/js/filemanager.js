@@ -4,9 +4,10 @@ if (typeof $ === "undefined") {
 
 import contextMenu from './contextual';
 import Box from './box';
-import FileController from './fileController';
-import FolderController from './folderController';
-import ShareController from './shareController';
+import FileController from './Controllers/fileController';
+import FolderController from './Controllers/folderController';
+import ShareController from './Controllers/shareController';
+import Locker from './locker';
 
 /**
  * FIlemanager class for laravel
@@ -26,6 +27,7 @@ class FileManager
 
         this.pageFolders = 1;
         this.pageFiles = 1;
+        this.currentFolderConfig = false;
 
         this.loadRequiredPlugins(() => {
             this.setElements();
@@ -58,9 +60,9 @@ class FileManager
             this.loadContent();
         }
         
-        this.loadContextMenus();
         this.loadTriggers();
 
+        this.locker = new Locker(this);
         this.box = new Box(this);
         this.file = new FileController(this);
         this.share = new ShareController(this);
@@ -191,67 +193,102 @@ class FileManager
      * 
      * @returns {undefined}
      */
-    loadContextMenus()
+    loadContextMenus(destroy = false)
     {
-
-        $.contextMenu({
+        if(destroy){
+           $('.contextMenu').unbind().remove(); 
+        }
+        
+        this.elementMenu();
+        this.contentMenu();
+    }
+    
+    /**
+     * Set the elements context menu
+     * 
+     * @returns {undefined}
+     */
+    elementMenu()
+    {        
+        let menu = $.contextMenu({
             targets: '#package-content .file, #package-content .folder',
-            menu: [
-                {
-                    name: this.trans('rename'),
-                    icon: `edit`,
-                    callback: (e) => {
-                        let type = $(e.currentTarget).hasClass('file') ? 'file' : 'folder';
-                        $(e.currentTarget).trigger(`${type}:edit`);
-                    }
-                },
-                {
-                    name: this.trans('details'),
-                    icon: `clipboard`,
-                    callback: (e) => {
-                        let type = $(e.currentTarget).hasClass('file') ? 'file' : 'folder';
-                        $(e.currentTarget).trigger(`${type}:details`);
-                    }
-                },
-                {
-                    name: this.trans('share'),
-                    icon: `share-2`,
-                    callback: (e) => {
-                        let type = $(e.currentTarget).hasClass('file') ? 'file' : 'folder';
-                        $(e.currentTarget).trigger(`${type}:share`);
-                    }
-                },
-                {
-                    name: this.trans('delete'),
-                    icon: `trash`,
-                    callback: (e) => {
-                        let type = $(e.currentTarget).hasClass('file') ? 'file' : 'folder';
-                        $(e.currentTarget).trigger(`${type}:delete`);
-                    }
+            menu: [{
+                name: this.trans('open'),
+                icon: `eye`,
+                callback: (e) => {
+                    let type = $(e.currentTarget).hasClass('file') ? 'file' : 'folder';
+                    $(e.currentTarget).trigger(`${type}:open`);
                 }
-
-            ]
-
+            },{
+                name: this.trans('rename'),
+                icon: `edit`,
+                callback: (e) => {
+                    let type = $(e.currentTarget).hasClass('file') ? 'file' : 'folder';
+                    $(e.currentTarget).trigger(`${type}:edit`);
+                }
+            },{
+                name: this.trans('share'),
+                icon: `share-2`,
+                callback: (e) => {
+                    let type = $(e.currentTarget).hasClass('file') ? 'file' : 'folder';
+                    $(e.currentTarget).trigger(`${type}:share`);
+                }
+            },{
+                name: this.trans('delete'),
+                icon: `trash`,
+                callback: (e) => {
+                    let type = $(e.currentTarget).hasClass('file') ? 'file' : 'folder';
+                    $(e.currentTarget).trigger(`${type}:delete`);
+                }
+            }]
         });
-
-        $.contextMenu({
+        
+        this.locker.cannot('open', this.currentFolderConfig, () => {
+            menu.element.find('[data-id="0"]').remove();
+        });
+        this.locker.cannot('edit', this.currentFolderConfig, () => {
+            menu.element.find('[data-id="1"]').remove();
+        });
+        this.locker.cannot('share', this.currentFolderConfig, () => {
+            menu.element.find('[data-id="2"]').remove();
+        });
+        this.locker.cannot('delete', this.currentFolderConfig, () => {
+            menu.element.find('[data-id="3"]').remove();
+        });
+    }
+    
+    /**
+     * 
+     * @returns {undefined}
+     */
+    contentMenu()
+    {        
+        if(this.currentPath === 'shared'){
+            return;
+        }
+        
+        let menu = $.contextMenu({
             targets: '#package-content',
             menu: [
                 {
-                    name: this.trans('upload files'),
-                    icon: `upload`,
-                    callback: () => {
-                        $(document).trigger('file:upload');
-                    }
-                }, {
                     name: this.trans('new folder'),
                     icon: `folder-plus`,
                     callback: (e, menu, position) => {
                         $(document).trigger('folder:create');
                     }
+                },{
+                    name: this.trans('upload files'),
+                    icon: `upload`,
+                    callback: () => {
+                        $(document).trigger('file:upload');
+                    }
                 }
             ]
-
+        });
+        
+        this.locker.cannot('upload', this.currentFolderConfig, () => {
+            menu.element.find('[data-id="0"]').remove();
+            menu.element.find('[data-id="1"]').remove();
         });
     }
 
@@ -266,6 +303,12 @@ class FileManager
         if (typeof feather === "undefined") {
             $.getScript('https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js', () => {
                 feather.replace();
+            });
+        }
+        if(typeof toastme === "undefined"){
+            $('<link/>', {rel: 'stylesheet',type: 'text/css',href: 'https://unpkg.com/toastmejs@latest/dist/css/toastme.css'}).appendTo('head');
+            $.getScript('https://unpkg.com/toastmejs@latest/dist/js/toastme.min.js', () => {
+                window.toastme = toastme;
             });
         }
 
@@ -293,6 +336,9 @@ class FileManager
         $.get(url, (response) => {
 
             this.domContent.html(response);
+            
+            this.domDetails.find('.button').remove();
+            
             this.loadFolders(() => {
                 this.loadFiles(() => {
                     this.setContentPlugins();
@@ -380,6 +426,7 @@ class FileManager
      */
     setContentPlugins()
     {
+        this.loadContextMenus('destroy');
         $('.nu-context-menu').not(':first').remove();
 
         feather.replace();
@@ -394,6 +441,8 @@ class FileManager
                 "ui-selected": "active"
             }
         });
+        
+        
     }        
 
     /**

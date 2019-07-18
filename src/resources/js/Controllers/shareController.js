@@ -9,6 +9,7 @@ class ShareController
     {
         this.FileManager = FileManager;
         this.box = FileManager.box;
+        this.locker = FileManager.locker;
         this.loadTriggers();
     }
     
@@ -51,15 +52,32 @@ class ShareController
     {
         this.box.title = this.FileManager.trans('share file');
         
-        $.post(this.FileManager.url('details/file'), {_token : this.FileManager.config._token, item : $(e.currentTarget).data('id')}, (response) => {
+        this.locker.can('share', $(e.currentTarget).data('id'), (response) => {
             this.box.content = `
                 <form id="shareContent">
                     <input type="hidden" name="item" value="${response.id}">
                     <input type="hidden" name="type" value="file">
+            
                     <label>${this.FileManager.trans('enter email of the user(s)')}</label>
                     <input placeholder="foo@bar.com" autocomplete="off" type="text" name="email" /><br><br>
                     <button class="button button-green button-small">${this.FileManager.trans('share')}</button>
+            
                     <br><br>
+                    
+                    <label>${this.FileManager.trans('permissions')}</label>
+                    <div class="inputGroup">
+                        <input disabled value="1" id="openOption" checked name="open" type="checkbox"/>
+                        <label for="openOption">${this.FileManager.trans('can open')}</label>
+                    </div>
+                    <div class="inputGroup">
+                        <input value="1" id="editOption" name="edit" type="checkbox"/>
+                        <label for="editOption">${this.FileManager.trans('can edit')}</label>
+                    </div>
+                    <div class="inputGroup">
+                        <input value="1" id="deleteOption" name="delete" type="checkbox"/>
+                        <label for="deleteOption">${this.FileManager.trans('can delete')}</label>
+                    </div>
+            
                     <!--${this.FileManager.trans('or anyone with this link')}<br><br>
                     <span class="selectOnClick">${this.FileManager.config.mediaUrl}/${response.basepath}</span>-->
                 </form>
@@ -82,10 +100,31 @@ class ShareController
                 <form id="shareContent">
                     <input type="hidden" name="item" value="${response.id}">
                     <input type="hidden" name="type" value="folder">
+            
                     <label>${this.FileManager.trans('enter email of the user(s)')}</label>
                     <input placeholder="foo@bar.com" autocomplete="off" type="text" name="email" /><br><br>
                     <button class="button button-green button-small">${this.FileManager.trans('share')}</button>
+            
                     <br><br>
+                    
+                    <label>${this.FileManager.trans('permissions')}</label>
+                    <div class="inputGroup">
+                        <input disabled value="1" id="openOption" checked name="open" type="checkbox"/>
+                        <label for="openOption">${this.FileManager.trans('can open')}</label>
+                    </div>
+                    <div class="inputGroup">
+                        <input value="1" id="editOption" name="edit" type="checkbox"/>
+                        <label for="editOption">${this.FileManager.trans('can edit')}</label>
+                    </div>
+                    <div class="inputGroup">
+                        <input value="1" id="deleteOption" name="delete" type="checkbox"/>
+                        <label for="deleteOption">${this.FileManager.trans('can delete')}</label>
+                    </div>
+                    <div class="inputGroup">
+                        <input value="1" id="uploadOption" name="upload" type="checkbox"/>
+                        <label for="uploadOption">${this.FileManager.trans('can upload')}</label>
+                    </div>
+            
                     <!--${this.FileManager.trans('or anyone with this link')}<br><br>
                     <span class="selectOnClick">${this.FileManager.config.mediaUrl}/${response.basepath}</span>-->
                 </form>
@@ -102,13 +141,10 @@ class ShareController
     pushSharedContent(e)
     {
         let type = $(e.currentTarget).find('input[name="type"]').val();
+        let data = $(e.currentTarget).serializeArray();
         
-        let data = {
-            _token: this.FileManager.config._token,
-            item: $(e.currentTarget).find('input[name="item"]').val(),
-            email: $(e.currentTarget).find('input[name="email"]').val()
-        };
-        
+        data[data.length] = {name : "_token" , value : this.FileManager.config._token};
+ 
         $.post(this.FileManager.url('share/'+type), data, (response) => {
             this.box.hide();
             this.FileManager.loadContent();
@@ -125,7 +161,6 @@ class ShareController
     {
         let type = $(e.currentTarget).hasClass('.file-button') ? "file" : "folder";
         
-//        
         $.post(this.FileManager.url('details/'+type), {_token : this.FileManager.config._token, item : $(e.currentTarget).data('id')}, (response) => {
             $.post(this.FileManager.url('shared'), {_method:"delete", _token : this.FileManager.config._token, item : response.id}, () => {
                 $(e.currentTarget).remove();

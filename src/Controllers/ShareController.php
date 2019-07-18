@@ -57,11 +57,16 @@ class ShareController extends \SingleQuote\FileManager\FileManager
             $shared[$user->id] = [
                 'user' => $user,
                 'path' => "$newPath/{$this->item->id}",
-                'shared_on' => now()->format('Y-m-d H:i:s')
+                'shared_on' => now()->format('Y-m-d H:i:s'),
+                'permissions' => [
+                    'open' => (int) $request->get('open', 1),
+                    'edit' => (int) $request->get('edit', 0),
+                    'delete' => (int)$request->get('delete', 0)
+                ]
             ];
 
             $this->item->shared = $shared;
-
+            
             FilesController::writeToConfig($this->item, "$sharedPath/{$this->item->id}.fmc");
         }
 
@@ -80,27 +85,44 @@ class ShareController extends \SingleQuote\FileManager\FileManager
         $this->buildData($request);
 
         foreach ($this->users as $user) {
-            $sharedPath = "{$this->config('path', 'media')}/shared-drive/" . md5($user->id);
-            $newPath = Storage::disk($this->config('disk', 'local'))->path($sharedPath);
-
-            File::link("$this->path.fmc", "$newPath/{$this->item->id}.fmc");
-            File::link("$this->path", "$newPath/{$this->item->id}.");
-
-            $shared = isset($this->item->shared) ? (array) $this->item->shared : [];
-
-            $shared[$user->id] = [
-                'user' => $user,
-                'path' => "$newPath/{$this->item->id}",
-                'shared_on' => now()->format('Y-m-d H:i:s')
-            ];
-
-            $this->item->shared = $shared;
-
-            FilesController::writeToConfig($this->item, "$sharedPath/{$this->item->id}.fmc");
+            $this->shareElement($user, $this->item, $this->path, [
+                'open' => (int) $request->get('open', 1),
+                'edit' => (int) $request->get('edit', 0),
+                'delete' => (int)$request->get('delete', 0),
+                'upload' => (int)$request->get('upload', 0)
+            ]);
         }
 
         FolderObserver::shared($this->item);
         return response("", 204);
+    }
+    
+    /**
+     * Share the element
+     * 
+     * @param mixed $user
+     * @param object $item
+     */
+    public function shareElement($user, object $item, string $path,  array $permissions, $add = "")
+    {
+        $sharedPath = "{$this->config('path', 'media')}/shared-drive/" . md5($user->id);
+        $newPath = Storage::disk($this->config('disk', 'local'))->path($sharedPath);
+
+        File::link("$path.fmc", "$newPath/{$add}/{$item->id}.fmc");
+        File::link("$path", "$newPath/{$add}/{$item->id}.");
+
+        $shared = isset($item->shared) ? (array) $item->shared : [];
+
+        $shared[$user->id] = [
+            'user' => $user,
+            'path' => "$newPath/{$item->id}",
+            'shared_on' => now()->format('Y-m-d H:i:s'),
+            'permissions' => $permissions
+        ];
+
+        $item->shared = $shared;
+
+        FilesController::writeToConfig($item);
     }
 
     /**

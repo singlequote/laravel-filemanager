@@ -117,9 +117,8 @@ class FilesController extends \SingleQuote\FileManager\FileManager
             $config = $this->parseConfig($this->makePath($request, $request->item));
 
             if ($config) {
-
-                $config->uploader = isset($config->uploader) ? $config->uploader->name : false;
                 $config->content = view('laravel-filemanager::types.details')->with(compact('config'))->render();
+                $config->isOwner = \Auth::check() && $config->uploader && \Auth::id() === decrypt(optional($config->uploader)->id);
                 return $config;
             }
 

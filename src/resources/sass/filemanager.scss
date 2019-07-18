@@ -6,6 +6,7 @@
 @import "./_loader";
 @import "./contextual";
 @import "./jquery-ui";
+@import "./toggles";
 
 ::-webkit-scrollbar {
     width: 3px
@@ -67,13 +68,13 @@
         }
 
     }  
-    
+
     .emptyContent{
         text-align: center;
         width:50%;
         max-width:300px;
         margin:auto;
-        
+
         svg{
             width:300px;
             height:300px;
@@ -91,7 +92,7 @@
             margin-left:-30px;
             margin-bottom:10px;
         }
-            
+
         .sidebar-button{
             padding: 13px 0 11px 30px;
             width:88%;
@@ -132,10 +133,10 @@
         height: 90%;
         overflow: auto;
         padding: 13px 0 11px 30px;
-        
-       
-        
-        
+
+
+
+
         .load-more{
             height:44px;
             position: relative;
@@ -154,7 +155,7 @@
                 font-weight:500;
             }
         }
-        
+
         .folders .folder.active, .files .file.active, .ui-selecting{
             border: 1px solid $blue-300; 
             box-shadow: 0px 4px 9px -4px $blue-300;
@@ -173,7 +174,7 @@
                 grid-template-columns: 25% calc(100% - 25%);
                 border-radius:8px;
                 margin:5px;
-                
+
                 .shared{
                     vertical-align: middle;
                     position: absolute;
@@ -186,7 +187,7 @@
                         vertical-align: middle;
                     }
                 }
-                
+
                 .label{
                     vertical-align: middle;
                     line-height:28px;
@@ -205,7 +206,7 @@
                 border:1px solid $gray-300;
                 border-radius:5px;
                 margin:10px;
-                
+
                 .shared{
                     position: absolute;
                     bottom: 0px;
@@ -222,16 +223,16 @@
                         height:auto;
                     }
                 }
-                
+
                 .icon{
                     height:150px;
                     overflow:hidden;
                     text-align:center;
-                    
+
                     img{
                         margin-top:10px;
                         width:50%;
-                        
+
                     }
                 }
 
@@ -248,23 +249,23 @@
             }
 
         }
-        
+
         .files,.folders{
             grid-template-columns:repeat(3, 33.33333333333333%);
         }
-        
+
         @media screen and (min-width: 1345px) {
             .files,.folders{
                 grid-template-columns:repeat(4, 25%);
             }
         }
-        
+
         @media screen and (min-width: 1600px) {
             .files,.folders{
                 grid-template-columns:repeat(5, 20%);
             }
         }
-        
+
         @media screen and (min-width: 2000px) {
             .files,.folders{
                 grid-template-columns:repeat(6, 16.6666666667%);
@@ -272,6 +273,7 @@
         }
 
         .uploader{
+            background:$white;
             position: fixed;
             bottom: -1px;
             right: -1px;
@@ -308,7 +310,7 @@
         }
 
     }
-    
+
     #package-details{
         opacity:0;
         border-left: 1px solid $gray-300;
@@ -317,30 +319,30 @@
             border-bottom:1px solid $gray-400;
             padding: 18px 0 11px 30px;
         }
-        
+
         #content{
             padding:20px;
         }
-        
+
         .text-center{
             text-align: center;
         }
-        
+
     }
-    
-    
+
+
     .filemanager-table{
         color:$gray-500;
         display: table;
         width:100%;
-        
+
         tr{
             display: table-row;
-            
+
             td:first-child{
                 color:$gray-400;
             }
-            
+
             td{
                 padding:5px;
                 display: table-cell;
@@ -348,7 +350,7 @@
             }
         }
     }
-    
+
     .button {
         background-color: $green; /* Green */
         border: none;
@@ -363,16 +365,16 @@
         -webkit-transition-duration: 0.4s; /* Safari */
         transition-duration: 0.4s;
         cursor: pointer;
-        
+
         *{
             vertical-align: middle;
         }
     }
-    
+
     .button-small{
         padding: 7px 23px;
     }
-    
+
     .button-xs{
         padding: 5px 5px 5px 5px;
     }
@@ -385,6 +387,17 @@
 
     .button-green:hover {
         background-color: $green;
+        color: $white;
+    }
+
+    .button-light {
+        background-color: $white; 
+        color: $info; 
+        border: 2px solid $info;
+    }
+
+    .button-light:hover {
+        background-color: $info;
         color: $white;
     }
 
@@ -432,5 +445,18 @@
         color: white;
     }
 
-    
+    input[type=text], select, textarea {
+        width: 90%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        resize: vertical;
+    }
+
+    label {
+        padding: 12px 12px 12px 0;
+        display: inline-block;
+    }
+
+
 }
