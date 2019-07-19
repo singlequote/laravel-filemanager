@@ -112,7 +112,7 @@ class FilesController extends \SingleQuote\FileManager\FileManager
      * @param string $path
      * @return string
      */
-    public static function createConfigByFile(string $path): string
+    public static function createConfigByFile(string $path, array $config = []): string
     {
         $class = new FoldersController;
         $id = (string) Str::uuid();
@@ -120,7 +120,7 @@ class FilesController extends \SingleQuote\FileManager\FileManager
         $name = File::name($path);
         $storage_path = Storage::disk($class->config('disk', 'local'))->path($class->config('path', 'media'));
         
-        $data = [
+        $data = array_merge([
             'type' => "file",
             'basepath' => $class->parseUrl(str_replace($name, $id, Str::after($path, $storage_path, $path))),
             'id' => "$id",
@@ -132,13 +132,13 @@ class FilesController extends \SingleQuote\FileManager\FileManager
             'uploader' => \Auth::check() ? ['id' => encrypt(\Auth::id()), 'name' => \Auth::user()->name] : null,
             'created_at' => now()->format('Y-m-d H:i:s'),
             'updated_at' => now()->format('Y-m-d H:i:s')
-        ];
+        ], $config);
         
         File::move($path, Str::before($path, $name)."$id.$extension");
         File::put(Str::before(str_replace($name, $id, $path),'.').".fmc",  json_encode($data));
 
         FileObserver::create((object) $data);
-        return $id;
+        return $data['basepath'];
     }
 
     /**
