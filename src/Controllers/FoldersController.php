@@ -132,7 +132,13 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
         FolderObserver::create((object) $data);
         return response("", 204);
     }
-
+    
+    /**
+     * Create a folder inside the shared folder
+     * 
+     * @param string $path
+     * @param object $data
+     */
     private function createInShared(string $path, object $data)
     {
         $parent = $this->getConfig(Storage::disk($this->config('disk', 'local'))->path("{$this->config('path')}/$path"));
@@ -144,6 +150,23 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
             (array) $parent->shared->{\Auth::user()->id}->permissions,
             $parent->id
         );
+    }
+    
+    /**
+     * Return the full path by driver and path-to
+     * 
+     * @param string $driver
+     * @param string $path
+     * @return string
+     */
+    public static function path(string $driver, string $path) : string
+    {
+        $class = new FoldersController;
+        $driversPath = $class->pathByDriverName($driver);
+        $folderPath = $class->parseUrl("$driversPath/$path");
+        $fullPath = Storage::disk($class->config('disk', 'local'))->path("{$class->config('path')}/$folderPath");
+        
+        return $fullPath;
     }
     
     /**
