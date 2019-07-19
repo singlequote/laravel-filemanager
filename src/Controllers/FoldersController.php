@@ -110,7 +110,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
         $id = Str::uuid();
         $path = $this->getPathByDrive($request);
         $folderPath = $this->parseUrl("$path/$id");
-        
+
         $data = [
             'type' => "folder",
             'basepath' => $this->parseUrl($folderPath),
@@ -121,18 +121,18 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
             'created_at' => now()->format('Y-m-d H:i:s'),
             'updated_at' => now()->format('Y-m-d H:i:s')
         ];
-                
+
         Storage::disk($this->config('disk', 'local'))->put("{$this->config('path')}/$folderPath.fmc", json_encode($data));
         Storage::disk($this->config('disk', 'local'))->makeDirectory("{$this->config('path')}/$folderPath");
-        
-        if(Str::startsWith($this->drivePath, 'shared')){
+
+        if (Str::startsWith($this->drivePath, 'shared')) {
             $this->createInShared($path, (object) $data);
         }
-        
+
         FolderObserver::create((object) $data);
         return response("", 204);
     }
-    
+
     /**
      * Create a folder inside the shared folder
      * 
@@ -142,16 +142,16 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
     private function createInShared(string $path, object $data)
     {
         $parent = $this->getConfig(Storage::disk($this->config('disk', 'local'))->path("{$this->config('path')}/$path"));
-        
+
         (new ShareController)->shareElement(
-            \Auth::user(), 
-            $data, 
+            \Auth::user(),
+            $data,
             $this->addPath($path, $data->id),
             (array) $parent->shared->{\Auth::user()->id}->permissions,
             $parent->id
         );
     }
-    
+
     /**
      * Return the full path by driver and path-to
      * 
@@ -159,16 +159,16 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
      * @param string $path
      * @return string
      */
-    public static function path(string $driver, string $path) : string
+    public static function path(string $driver, string $path): string
     {
         $class = new FoldersController;
         $driversPath = $class->pathByDriverName($driver);
         $folderPath = $class->parseUrl("$driversPath/$path");
         $fullPath = Storage::disk($class->config('disk', 'local'))->path("{$class->config('path')}/$folderPath");
-        
+
         return $fullPath;
     }
-    
+
     /**
      * Create directory
      * Return uuid when success
@@ -177,7 +177,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
      * @param string $path
      * @return string
      */
-    public static function createDirectory(string $driver, string $path, string $generateUUID = null): string
+    public static function createDirectory(string $driver, string $path, string $generateUUID = null, array $config = []): string
     {
         $explodePath = explode('/', $path);
         $name = array_pop($explodePath);
@@ -186,7 +186,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
         $driversPath = $class->pathByDriverName($driver);
         $folderPath = $class->parseUrl("$driversPath/" . implode($explodePath, '/') . "/$id");
 
-        $data = [
+        $data = array_merge([
             'type' => "folder",
             'basepath' => $class->parseUrl($folderPath),
             'path' => $class->parseUrl(implode($explodePath, '/') . "/$id", true),
@@ -195,12 +195,12 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
             'uploader' => \Auth::user() ? \Auth::user()->toArray() : null,
             'created_at' => now()->format('Y-m-d H:i:s'),
             'updated_at' => now()->format('Y-m-d H:i:s')
-        ];
+            ], $config);
 
         Storage::disk($class->config('disk', 'local'))->put("{$class->config('path')}/$folderPath.fmc", json_encode($data));
         Storage::disk($class->config('disk', 'local'))->makeDirectory("{$class->config('path')}/$folderPath");
         FolderObserver::create((object) $data);
-        return $id;
+        return $data;
     }
 
     /**
