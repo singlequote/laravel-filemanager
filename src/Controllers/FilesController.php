@@ -104,6 +104,42 @@ class FilesController extends \SingleQuote\FileManager\FileManager
         FileObserver::create((object) $fileConfig);
         return response("", 204);
     }
+    
+    /**
+     * Create a config file from an existing file
+     * Can be used when the server uploads an file and there is no config file present
+     * 
+     * @param string $path
+     * @return string
+     */
+    public static function createConfigByFile(string $path): string
+    {
+        $class = new FoldersController;
+        $id = (string) Str::uuid();
+        $extension = File::extension($path);
+        $name = File::name($path);
+        $storage_path = Storage::disk($class->config('disk', 'local'))->path($class->config('path', 'media'));
+        
+        $data = [
+            'type' => "file",
+            'basepath' => $class->parseUrl(str_replace($name, $id, Str::after($path, $storage_path, $path))),
+            'id' => "$id",
+            'filename' => $name,
+            'extension' => $extension,
+            'size' => File::size($path),
+            'mimetype' => File::mimeType($path),
+            'image' => Str::startsWith(File::mimeType($path), "image"),
+            'uploader' => \Auth::check() ? ['id' => encrypt(\Auth::id()), 'name' => \Auth::user()->name] : null,
+            'created_at' => now()->format('Y-m-d H:i:s'),
+            'updated_at' => now()->format('Y-m-d H:i:s')
+        ];
+        
+        File::move($path, Str::before($path, $name)."$id.$extension");
+        File::put(Str::before(str_replace($name, $id, $path),'.').".fmc",  json_encode($data));
+
+        FileObserver::create((object) $data);
+        return $id;
+    }
 
     /**
      * Return the file details
