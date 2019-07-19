@@ -177,7 +177,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
      * @param string $path
      * @return string
      */
-    public static function createDirectory(string $driver, string $path, string $generateUUID = null, array $config = []): string
+    public static function createDirectory(string $driver, string $path, string $generateUUID = null, array $config = []): array
     {
         $explodePath = explode('/', $path);
         $name = array_pop($explodePath);
