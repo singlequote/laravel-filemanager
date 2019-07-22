@@ -192,7 +192,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
             'path' => $class->parseUrl(implode($explodePath, '/') . "/$id", true),
             'id' => "$id",
             'name' => $name,
-            'uploader' => \Auth::user() ? \Auth::user()->toArray() : null,
+            'uploader' => \Auth::user() ? ['id' => encrypt(\Auth::id()), 'name' => \Auth::user()->name] : null,
             'created_at' => now()->format('Y-m-d H:i:s'),
             'updated_at' => now()->format('Y-m-d H:i:s')
             ], $config);
