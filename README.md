@@ -42,9 +42,9 @@ The package (when enabled) will cache all the files inside the public folder. To
 ### To do list
 
  - [ ] Docs
- - [ ] Sharing folders by link
+ - [x] Sharing folders by link
  - [x] Sharing files by link
- - [ ] Update design
+ - [x] Update design
 
 ![Preview 1](https://i.gyazo.com/230b5bbf3828807dd9fee340dae65eb2.jpg)
 ![Preview 2](https://i.gyazo.com/e21b610a0756a6cc753d830cb7a20a5e.jpg)
