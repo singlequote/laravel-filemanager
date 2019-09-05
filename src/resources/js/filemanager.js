@@ -85,6 +85,9 @@ class FileManager
             this.domContent.find('.files').css('grid-template-columns', 'repeat(4, 25%)');
             this.domContent.find('.folders').css('grid-template-columns', 'repeat(4, 25%)');
         }
+        if(!this.domSidebar.length){
+            this.domPackage.css('grid-template-columns', '75% 25%');
+        }
     }
 
     /**
@@ -336,6 +339,9 @@ class FileManager
         $.get(url, (response) => {
 
             this.domContent.html(response);
+            if(!this.domPackage.data('load-header')){
+                this.domContent.find('.breadcrumb').remove();
+            }
             
             this.domDetails.find('.button').remove();
             
@@ -366,6 +372,7 @@ class FileManager
         if (driver) {
             $(`.drive[data-slug="${driver}"]`).trigger('click');
         }
+        
         this.setElements();
         this.domPackage.data('start', true);
             
@@ -467,7 +474,7 @@ class FileManager
      */
     url(path, addition = false)
     {
-        let currentPath = this.currentPath ? this.currentPath : $('.sidebar-button.active').data('slug');
+        let currentPath = this.currentPath ? this.currentPath : $('.drive.active').data('slug');
 
         this.currentPath = addition ? currentPath + "/" + addition : currentPath;
 

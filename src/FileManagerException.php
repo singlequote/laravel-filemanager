@@ -8,8 +8,4 @@ namespace SingleQuote\FileManager;
  */
 class FileManagerException extends \Exception
 {
-    
-    
-    
-    
 }

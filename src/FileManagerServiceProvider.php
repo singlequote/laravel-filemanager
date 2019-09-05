@@ -55,7 +55,8 @@ class FileManagerServiceProvider extends ServiceProvider
         $this->app->bind('FileManager', 'SingleQuote\FileManager\FileManager');
 
         $this->mergeConfigFrom(
-            __DIR__.'/../config/laravel-filemanager.php', 'laravel-filemanager'
+            __DIR__.'/../config/laravel-filemanager.php',
+            'laravel-filemanager'
         );
     }
 }

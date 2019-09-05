@@ -97,6 +97,12 @@ class FileController
         });
     }
     
+    /**
+     * 
+     * @param {type} e
+     * @param {type} el
+     * @returns {undefined}
+     */
     open(e, el = false)
     {
         let element = e ? $(e.currentTarget) : el;
@@ -176,9 +182,10 @@ class FileController
             $('#package-content .uploader .uploads').append(`
                 <div class="file-list" data-id="${id}"><div class="file-name">${file.name} | ${file.type}</div><div class="file-progress">0 %</div></div>
             `);
-
-            this.upload(id, element, index, file);
-        });
+            setTimeout(() => {
+                this.upload(id, element, index, file);
+            }, 500);
+''        });
     }
     
     /**
@@ -242,6 +249,8 @@ class FileController
                     this.FileManager.loadContent();
                 }
             }
+        }).fail((response) => {
+            $(`div[data-id="${id}"]`).css('color', '#ff0000').find('.file-progress').html(response.responseJSON.message);
         });
     }
     
@@ -282,6 +291,9 @@ class FileController
             $.post(url, {_method: "delete", _token: this.FileManager.config._token, item: element.data('id')}, () => {
                 element.hide('slow', () => {
                     element.remove();
+                    if(!$(`#package-content .file`).length){
+                        this.FileManager.loadContent();
+                    }
                 });
             });
         });

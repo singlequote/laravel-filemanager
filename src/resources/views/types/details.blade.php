@@ -44,10 +44,12 @@
         <td>{{ $config->updated_at }}</td>
     </tr>
     @endif
+    @if(isset($config->uploader))
     <tr>
         <td>{{ __('filemanager::laravel-filemanager.uploader') }}</td>
         <td>{{ isset($config->uploader) ? $config->uploader->name : __('filemanager::laravel-filemanager.unkown') }}</td>
     </tr>
+    @endif
     @if(isset($config->shared))
     <tr>
         <td>{{ __('filemanager::laravel-filemanager.shared with') }}</td>
@@ -64,10 +66,10 @@
 @if($type === 'file')
 <a class='button button-xs button-light' target='_blank' href='{{ route(config('laravel-filemanager.media.prefix'), $config->basepath) }}'><i data-feather='eye'></i></a>
 @endif
-@if($config->uploader && decrypt($config->uploader->id) === optional(Auth::user())->id)
+@if(isset($config->uploader) && $config->uploader && decrypt($config->uploader->id) === optional(Auth::user())->id)
 <button class='details-share button button-xs button-green {{ $type }}-button' data-id='{{ $config->id }}' onclick="$(this).trigger('{{ $type }}:share')"><i data-feather='share-2'></i></button>
 @endif
-@if(isset($config->shared) && $config->uploader && decrypt($config->uploader->id) === optional(Auth::user())->id)
+@if(isset($config->shared) && isset($config->uploader) && $config->uploader && decrypt($config->uploader->id) === optional(Auth::user())->id)
 <button title='{{ __('filemanager::laravel-filemanager.remove the shared links') }}' class='details-button button button-xs button-black {{ $type }}-button' data-id='{{ $config->id }}' onclick="$(this).trigger('{{ $type }}:delete-shared')"><i data-feather='shield'></i></button>
 @endif
 <button class='details-edit button button-xs button-blue {{ $type }}-button' data-id='{{ $config->id }}' onclick="$(this).trigger('{{ $type }}:edit')"><i data-feather='edit'></i></button>

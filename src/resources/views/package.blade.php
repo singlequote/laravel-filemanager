@@ -1,7 +1,6 @@
 <link rel="stylesheet" href="{{ $css }}" media="screen">
-<div id="package-filemanager" data-start="{{ $loadOnStartUp }}" data-modal="{{ $modal ? "true" : "false" }}" data-url="{{ route(config('laravel-filemanager.prefix')) }}">
-
-
+<div id="package-filemanager" data-load-header='{{ $loadHeader }}' data-load-content='{{ $loadContent }}' data-start="{{ $loadOnStartUp }}" data-modal="{{ $modal ? "true" : "false" }}" data-url="{{ route(config('laravel-filemanager.prefix')) }}">
+    @if($loadSidebar === true)
     <div id='package-sidebar'>
 
         <div class="sidebar-header">
@@ -50,6 +49,11 @@
         @endif
         
     </div>
+    @else
+    <div style='display:none;' class='sidebar-button drive {{ $activeDrive && $activeDrive === 'public' ? 'active' : "" }}' data-slug='public'></div>
+    <div style='display:none;' class='sidebar-button drive {{ $activeDrive && $activeDrive === 'shared' ? 'active' : "" }}' data-slug='shared'></div>
+    <div style='display:none;' class='sidebar-button drive {{ $activeDrive && $activeDrive === 'drive' ? 'active' : "" }}' data-slug='drive'></div>
+    @endif
 
     <div id='package-content'></div>
 
@@ -61,10 +65,3 @@
     </div>
 
 </div>
-<!--<script src="{{ $script }}"></script>-->
-
-<script type="text/javascript" defer>   
-    if(typeof $ !== 'undefined' && typeof filemanager === 'undefined'){
-        $.getScript("{{ $script }}");
-    }
-</script>

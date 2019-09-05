@@ -246,6 +246,9 @@ class FolderController
                 $.post(url, {_method: "delete", _token: this.FileManager.config._token, item: element.data('id')}, () => {
                     element.hide('slow', () => {
                         element.remove();
+                        if(!$(`#package-content .folder`).length){
+                            this.FileManager.loadContent();
+                        }
                     });
                 });
             });

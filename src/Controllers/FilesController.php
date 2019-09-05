@@ -16,12 +16,11 @@ use File;
  */
 class FilesController extends \SingleQuote\FileManager\FileManager
 {
-
     use FileFolderTrait;
 
     /**
      * Load the folders raw
-     * 
+     *
      * @return array
      */
     private function load(): array
@@ -30,26 +29,26 @@ class FilesController extends \SingleQuote\FileManager\FileManager
             abort(503);
         }
 
-        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:files'])->remember("fi" . md5($this->driver), 3600, function() {
-                $items = File::files($this->getPath());
-                $files = [];
-                foreach ($items as $item) {
-                    $content = File::get($item->getPathname(), false);
-                    $object = json_decode($content);
-                    if ($object && isset($object->type) && $object->type === 'file') {
-                        $files[] = $object;
-                    } elseif ($object && Str::contains($object->basepath, '.')) {
-                        $files[] = $object;
-                    }
+        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:files'])->remember("fi" . md5($this->driver), 3600, function () {
+            $items = File::files($this->getPath());
+            $files = [];
+            foreach ($items as $item) {
+                $content = File::get($item->getPathname(), false);
+                $object = json_decode($content);
+                if ($object && isset($object->type) && $object->type === 'file') {
+                    $files[] = $object;
+                } elseif ($object && Str::contains($object->basepath, '.')) {
+                    $files[] = $object;
                 }
+            }
 
-                return $files;
-            });
+            return $files;
+        });
     }
 
     /**
      * Rename the file and return the config
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -72,7 +71,7 @@ class FilesController extends \SingleQuote\FileManager\FileManager
     /**
      * Upload a new file
      * Create a new config file
-     * 
+     *
      * @param \SingleQuote\FileManager\Controllers\Request $request
      * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
      */
@@ -83,7 +82,9 @@ class FilesController extends \SingleQuote\FileManager\FileManager
         $id = Str::uuid();
 
         $request->file('file')->storeAs(
-            $this->config('path', 'media') . "/$path", $id . "." . $file->getClientOriginalExtension(), $this->config('disk', 'local')
+            $this->config('path', 'media') . "/$path",
+            $id . "." . $file->getClientOriginalExtension(),
+            $this->config('disk', 'local')
         );
 
         $fileConfig = [
@@ -108,7 +109,7 @@ class FilesController extends \SingleQuote\FileManager\FileManager
     /**
      * Create a config file from an existing file
      * Can be used when the server uploads an file and there is no config file present
-     * 
+     *
      * @param string $path
      * @return string
      */
@@ -135,7 +136,7 @@ class FilesController extends \SingleQuote\FileManager\FileManager
         ], $config);
         
         File::move($path, Str::before($path, $name)."$id.$extension");
-        File::put(Str::before(str_replace($name, $id, $path),'.').".fmc",  json_encode($data));
+        File::put(Str::before(str_replace($name, $id, $path), '.').".fmc", json_encode($data));
 
         FileObserver::create((object) $data);
         return $data['basepath'];
@@ -143,13 +144,13 @@ class FilesController extends \SingleQuote\FileManager\FileManager
 
     /**
      * Return the file details
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
      */
     public function details(Request $request)
     {
-        $config = cache()->tags(['laravel-filemanager', 'laravel-filemanager:files'])->remember("laravel-filemanager:file-$request->item", 3600, function() use($request) {
+        $config = cache()->tags(['laravel-filemanager', 'laravel-filemanager:files'])->remember("laravel-filemanager:file-$request->item", 3600, function () use ($request) {
             $config = $this->parseConfig($this->makePath($request, $request->item));
 
             if ($config) {
@@ -166,7 +167,7 @@ class FilesController extends \SingleQuote\FileManager\FileManager
 
     /**
      * Delete a file and it's config
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
      */
@@ -176,7 +177,6 @@ class FilesController extends \SingleQuote\FileManager\FileManager
         $file = $this->config('path') . "/$path/$request->item.fmc";
 
         if (Storage::disk($this->config('disk', 'local'))->exists($file)) {
-
             $config = json_decode(Storage::disk($this->config('disk', 'local'))->get($file));
 
             Storage::disk($this->config('disk', 'local'))->delete($this->config('path') . "/$config->basepath");

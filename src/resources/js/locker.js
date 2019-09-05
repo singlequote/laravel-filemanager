@@ -124,7 +124,7 @@ class Locker
             }
             
             if(this.FileManager.currentPath.startsWith('public')){
-                if(config.isOwner){
+                if(config.isOwner || !config.uploader){
                     return callback(config, this.permissionsTrue);
                 }
                 return callback(config, this.permissions);

@@ -19,7 +19,7 @@ class ShareController extends \SingleQuote\FileManager\FileManager
 
     /**
      * Build the required data to share content
-     * 
+     *
      * @param Request $request
      */
     private function buildData(Request $request)
@@ -38,7 +38,7 @@ class ShareController extends \SingleQuote\FileManager\FileManager
 
     /**
      * Share file with the selected users
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
      */
@@ -76,7 +76,7 @@ class ShareController extends \SingleQuote\FileManager\FileManager
 
     /**
      * Share folder with the selected users
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
      */
@@ -99,11 +99,11 @@ class ShareController extends \SingleQuote\FileManager\FileManager
     
     /**
      * Share the element
-     * 
+     *
      * @param mixed $user
      * @param object $item
      */
-    public function shareElement($user, object $item, string $path,  array $permissions, $add = "")
+    public function shareElement($user, object $item, string $path, array $permissions, $add = "")
     {
         $sharedPath = "{$this->config('path', 'media')}/shared-drive/" . md5($user->id);
         $newPath = Storage::disk($this->config('disk', 'local'))->path($sharedPath);
@@ -127,7 +127,7 @@ class ShareController extends \SingleQuote\FileManager\FileManager
 
     /**
      * Delete all the shared conenctions of an item
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
      */
@@ -146,7 +146,7 @@ class ShareController extends \SingleQuote\FileManager\FileManager
 
     /**
      * Remove the shared config files
-     * 
+     *
      * @param object $config
      * @return boolean
      */

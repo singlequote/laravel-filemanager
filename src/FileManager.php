@@ -11,7 +11,6 @@ use Auth;
 
 class FileManager
 {
-
     protected $assetPath;
     protected $userModel;
     protected $script;
@@ -32,7 +31,7 @@ class FileManager
 
     /**
      * Set the access variables for the drivers
-     * 
+     *
      */
     private function setDriversAccess()
     {
@@ -85,13 +84,16 @@ class FileManager
                 'driversSize' => $driversSize ?? 0,
                 'modal' => $this->modal,
                 'maxUpload' => $this->config('max_upload_drive', false),
-                "loadOnStartUp" => $request->get('load-on-startup', "true")
+                "loadOnStartUp" => $request->get('load-on-startup', "true"),
+                "loadHeader" => $request->get('header', "true"),
+                "loadSidebar" => $request->get('sidebar', true),
+                "loadContent" => $request->get('content', "true"),
         ]);
     }
 
     /**
      * Set the modal attribute to true
-     * 
+     *
      * @return index()
      */
     public function modal(Request $request)
@@ -103,13 +105,13 @@ class FileManager
 
     /**
      * Get the size of a driver
-     * 
+     *
      * @param string $driver
      * @return int
      */
     private function getDriversSize(string $driver = "drive")
     {
-        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:disk-size'])->remember("laravel-filemanager:disk-size-$driver", 3600, function() use($driver){
+        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:disk-size'])->remember("laravel-filemanager:disk-size-$driver", 3600, function () use ($driver) {
             $driversPath = $this->pathByDriverName($driver);
             $path = $this->addPath($driversPath);
 
@@ -126,7 +128,7 @@ class FileManager
 
     /**
      * Get the active driver or set the default
-     * 
+     *
      * @param Request $request
      * @return string
      */
@@ -143,7 +145,7 @@ class FileManager
 
     /**
      * Return the config as json
-     * 
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function loadConfigurations(Request $request)
@@ -158,7 +160,7 @@ class FileManager
 
     /**
      * Load the content by drive
-     * 
+     *
      * @param Request $request
      * @return mixed
      */
@@ -183,7 +185,7 @@ class FileManager
 
     /**
      * Load the private drive content
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
      */
@@ -211,7 +213,7 @@ class FileManager
 
     /**
      * Load the files
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
      */
@@ -226,7 +228,7 @@ class FileManager
 
     /**
      * Load the folders
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
      */
@@ -241,7 +243,7 @@ class FileManager
 
     /**
      * Create a breadcrumb of the structure path
-     * 
+     *
      * @param array $structure
      * @return array
      */
@@ -259,7 +261,7 @@ class FileManager
         foreach ($explode as $index => $key) {
             $previous .= "$key";
             $config = FoldersController::getConfig(
-                    Storage::disk($this->config("disk", "local"))->path($this->config('path', 'media') . "/$this->drivePath/$previous")
+                Storage::disk($this->config("disk", "local"))->path($this->config('path', 'media') . "/$this->drivePath/$previous")
             );
 
             $previous .= "/";
@@ -275,7 +277,7 @@ class FileManager
 
     /**
      * Get the path by drive
-     * 
+     *
      * @param Request $request
      * @return string
      */
@@ -286,7 +288,7 @@ class FileManager
 
     /**
      * Get the path of the driver
-     * 
+     *
      * @return string
      */
     public function getDriversPath(Request $request)
@@ -310,7 +312,7 @@ class FileManager
 
     /**
      * Get the path by the name of the driver
-     * 
+     *
      * @param string $driver
      * @return string
      */
@@ -336,7 +338,7 @@ class FileManager
 
     /**
      * Get the current path
-     * 
+     *
      * @param Request $request
      * @return string
      */
@@ -359,7 +361,7 @@ class FileManager
 
     /**
      * Return a full path by driver configs
-     * 
+     *
      * @param Request $request
      * @return string
      */
@@ -372,7 +374,7 @@ class FileManager
 
     /**
      * Return the full path from storage
-     * 
+     *
      * @param string $path
      * @param string $add
      * @return string
@@ -385,7 +387,7 @@ class FileManager
 
     /**
      * Parse url to valid url without double //
-     * 
+     *
      * @param string $url
      * @return string
      */
@@ -396,7 +398,7 @@ class FileManager
         }
         $valid = str_replace("\\", "/", $url);
         $explode = explode("/", $valid);
-        $result = array_filter($explode, function($key) {
+        $result = array_filter($explode, function ($key) {
             return strlen($key) > 0;
         });
         $route = implode($result, '/');
@@ -405,7 +407,7 @@ class FileManager
 
     /**
      * Get the required script
-     * 
+     *
      * @return \Illuminate\Contracts\Routing\ResponseFactory
      */
     public function getScript()
@@ -418,7 +420,7 @@ class FileManager
 
     /**
      * Get the stylesheet
-     * 
+     *
      * @return \Illuminate\Contracts\Routing\ResponseFactory
      */
     public function getStyle()

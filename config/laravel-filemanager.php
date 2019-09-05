@@ -30,19 +30,19 @@ return [
     
     /**
      * Set to true if users can share files in a public drive
-     * 
+     *
      */
     'public_drive' => true,
     
     /**
      * If set to true, The user must be authenticated to access the public drive
-     * 
+     *
      */
     'require_authentication_public_drive' => true,
     
     /**
      * Set to true if users can share private files with other users or emails
-     * 
+     *
      */
     'shared_drive' => true,
 
@@ -53,18 +53,18 @@ return [
     
     /**
      * Lazy loading on resources
-     * 
+     *
      * Set the values to false if you don't want to use lazy loading
-     * 
+     *
      */
     'pagination_results_folders' => 12, //2 rows
     'pagination_results_files' => 15, //3 rows
     
     /**
      * Upload limit for private drive
-     * 
+     *
      * In KB 1000000 = 1GB
-     * 
+     *
      */
     'max_upload_drive' => 100000,
 

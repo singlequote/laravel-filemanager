@@ -11,11 +11,11 @@ use File;
  *
  * @author WPruiksma
  */
-trait FileFolderTrait 
+trait FileFolderTrait
 {
     /**
      * The driver
-     * 
+     *
      * string
      */
     private $driver = null;
@@ -27,19 +27,19 @@ trait FileFolderTrait
     
     /**
      * The start of the page
-     * 
+     *
      */
     public $start = 0;
     
     /**
      * The end of the page results
-     * 
+     *
      */
     public $end = 0;
     
     /**
      * Set the driver to init the class
-     * 
+     *
      * @param string $driver
      * @return \SingleQuote\FileManager\Controllers\FilesController
      */
@@ -55,7 +55,7 @@ trait FileFolderTrait
     
     /**
      * Set the request and it's paramaters
-     * 
+     *
      * @param Request $request
      * @param int $length
      * @return $this
@@ -66,10 +66,10 @@ trait FileFolderTrait
         $this->page     = $length ? $page : null;
         
         $this->end      = $this->page ? $length * $this->page : null;
-        $this->start    = $this->page ? $this->end - $length : null;       
+        $this->start    = $this->page ? $this->end - $length : null;
         $this->length   = $this->page ? $length : null;
         
-        if(!Storage::disk($this->config('disk', 'local'))->exists($this->config('path', 'media')."/".$this->getDriversPath($request))){
+        if (!Storage::disk($this->config('disk', 'local'))->exists($this->config('path', 'media')."/".$this->getDriversPath($request))) {
             Storage::disk($this->config('disk', 'local'))->makeDirectory($this->config('path', 'media')."/".$this->getDriversPath($request));
         }
         
@@ -78,7 +78,7 @@ trait FileFolderTrait
     
     /**
      * Set the drivers path
-     * 
+     *
      * @param string $path
      * @return $this
      */
@@ -91,7 +91,7 @@ trait FileFolderTrait
     
     /**
      * Return the full path off the driver
-     * 
+     *
      * @return string
      */
     public function getPath() : string
@@ -102,13 +102,13 @@ trait FileFolderTrait
     
     /**
      * Return the full file|folder path
-     * 
+     *
      * @param string $path
      * @return string
      */
     public static function path(string $path, $storage = true) : string
     {
-        if($storage){
+        if ($storage) {
             return Storage::disk(config('laravel-filemanager.disk', 'local'))
                 ->path(config('laravel-filemanager.path', 'media')."/$path");
         }
@@ -118,11 +118,12 @@ trait FileFolderTrait
     
     /**
      * Read the configuration of a folder
-     * 
+     *
      * @param string $path
      * @return object
      */
-    private function parseConfig(string $path): object {
+    private function parseConfig(string $path): object
+    {
         $config = File::get("$path.fmc");
         
         return json_decode($config);
@@ -130,7 +131,7 @@ trait FileFolderTrait
     
     /**
      * Get the config of a file or folder
-     * 
+     *
      * @param string $path
      * @return object
      */
@@ -143,12 +144,13 @@ trait FileFolderTrait
     
     /**
      * Write to or create new config file
-     * 
+     *
      * @param object $file
      * @param string $path
      * @return boolean
      */
-    private function writeConfig(object $file, string $path = null) {
+    private function writeConfig(object $file, string $path = null)
+    {
         if (!$path) {
             $path = $this->config('path') . "/" . Str::before($file->basepath, $file->id) . "$file->id.fmc";
         }
@@ -158,7 +160,7 @@ trait FileFolderTrait
     
     /**
      * Write to config file
-     * 
+     *
      * @param object $file
      * @param string $path
      * @return FileFolderTrait::writeConfig(object, string)
@@ -173,7 +175,7 @@ trait FileFolderTrait
     
     /**
      * Count all the folders
-     * 
+     *
      * @return int
      */
     public function count() : int
@@ -183,7 +185,7 @@ trait FileFolderTrait
     
     /**
      * Make the object
-     * 
+     *
      * @return \stdClass
      */
     public function make()
@@ -200,20 +202,17 @@ trait FileFolderTrait
     
     /**
      * Return a collection with the folders
-     * 
+     *
      * @return \Illuminate\Support\Collection
      */
     public function get()
     {
-        if(!is_null($this->start) && !is_null($this->end)){
-            $items = array_slice($this->load(),$this->start, $this->length);
-        }else{
+        if (!is_null($this->start) && !is_null($this->end)) {
+            $items = array_slice($this->load(), $this->start, $this->length);
+        } else {
             $items = $this->load();
         }
                 
         return collect($items);
     }
-    
-    
-    
 }

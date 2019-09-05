@@ -16,12 +16,11 @@ use File;
  */
 class FoldersController extends \SingleQuote\FileManager\FileManager
 {
-
     use FileFolderTrait;
 
     /**
      * Load the folders raw
-     * 
+     *
      * @return array
      */
     private function load(): array
@@ -30,26 +29,26 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
             abort(503);
         }
 
-        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:folders'])->remember("fo" . md5($this->driver), 3600, function() {
-                $items = File::files($this->getPath());
-                $folders = [];
-                foreach ($items as $item) {
-                    $content = File::get($item->getPathname(), false);
-                    $object = json_decode($content);
-                    if ($object && isset($object->type) && $object->type === 'folder') {
-                        $folders[] = $object;
-                    } elseif ($object && !Str::contains($object->basepath, '.')) {
-                        $folders[] = $object;
-                    }
+        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:folders'])->remember("fo" . md5($this->driver), 3600, function () {
+            $items = File::files($this->getPath());
+            $folders = [];
+            foreach ($items as $item) {
+                $content = File::get($item->getPathname(), false);
+                $object = json_decode($content);
+                if ($object && isset($object->type) && $object->type === 'folder') {
+                    $folders[] = $object;
+                } elseif ($object && !Str::contains($object->basepath, '.')) {
+                    $folders[] = $object;
                 }
+            }
 
-                return $folders;
-            });
+            return $folders;
+        });
     }
 
     /**
      * Delete a folder and its contents
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
      */
@@ -77,7 +76,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
     /**
      * Return the files of a folder
      * As config
-     * 
+     *
      * @param string $driver
      * @param string $path
      * @return array
@@ -101,7 +100,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
     }
 
     /**
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
      */
@@ -135,7 +134,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
 
     /**
      * Create a folder inside the shared folder
-     * 
+     *
      * @param string $path
      * @param object $data
      */
@@ -154,7 +153,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
 
     /**
      * Return the full path by driver and path-to
-     * 
+     *
      * @param string $driver
      * @param string $path
      * @return string
@@ -172,7 +171,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
     /**
      * Create directory
      * Return uuid when success
-     * 
+     *
      * @param string $driver
      * @param string $path
      * @return string
@@ -192,10 +191,9 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
             'path' => $class->parseUrl(implode($explodePath, '/') . "/$id", true),
             'id' => "$id",
             'name' => $name,
-            'uploader' => \Auth::user() ? ['id' => encrypt(\Auth::id()), 'name' => \Auth::user()->name] : null,
             'created_at' => now()->format('Y-m-d H:i:s'),
             'updated_at' => now()->format('Y-m-d H:i:s')
-            ], $config);
+        ], $config);
 
         Storage::disk($class->config('disk', 'local'))->put("{$class->config('path')}/$folderPath.fmc", json_encode($data));
         Storage::disk($class->config('disk', 'local'))->makeDirectory("{$class->config('path')}/$folderPath");
@@ -205,7 +203,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
 
     /**
      * Return the file details
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
      */
@@ -215,7 +213,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
 
         if ($config) {
             $config->type = "folder";
-            $config->isOwner = \Auth::check() && $config->uploader && \Auth::id() === decrypt(optional($config->uploader)->id);
+            $config->isOwner = \Auth::check() && isset($config->uploader) && \Auth::id() === decrypt(optional($config->uploader)->id);
             $config->content = view('laravel-filemanager::types.details')->with(compact('config'))->render();
             return response()->json($config);
         }
@@ -225,7 +223,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
 
     /**
      * Rename the file and return the config
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -247,7 +245,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
 
     /**
      * Check if directory exists
-     * 
+     *
      * @param string $driver
      * @param string $path
      * @return bool
