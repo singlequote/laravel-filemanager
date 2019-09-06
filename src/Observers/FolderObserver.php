@@ -12,14 +12,14 @@ class FolderObserver
      */
     public static function create(object $config)
     {
-        try{
-            cache()->tags([
-            'laravel-filemanager:folders',
-            'laravel-filemanager:disk-size'
-            ])->flush();
-        } catch (\Exception $ex) {
-
-        }
+//        try{
+//            cache()->tags([
+//            'laravel-filemanager:folders',
+//            'laravel-filemanager:disk-size'
+//            ])->flush();
+//        } catch (\Exception $ex) {
+//
+//        }
     }
     
     /**
@@ -29,14 +29,14 @@ class FolderObserver
      */
     public static function update(object $config)
     {
-        try{
-            cache()->tags([
-            'laravel-filemanager:folders',
-            'laravel-filemanager:disk-size'
-            ])->flush();
-        } catch (\Exception $ex) {
-
-        }
+//        try{
+//            cache()->tags([
+//            'laravel-filemanager:folders',
+//            'laravel-filemanager:disk-size'
+//            ])->flush();
+//        } catch (\Exception $ex) {
+//
+//        }
     }
     
     /**
@@ -46,14 +46,14 @@ class FolderObserver
      */
     public static function delete(object $config)
     {
-        try{
-            cache()->tags([
-            'laravel-filemanager:folders',
-            'laravel-filemanager:disk-size'
-            ])->flush();
-        } catch (\Exception $ex) {
-
-        }
+//        try{
+//            cache()->tags([
+//            'laravel-filemanager:folders',
+//            'laravel-filemanager:disk-size'
+//            ])->flush();
+//        } catch (\Exception $ex) {
+//
+//        }
     }
     
     /**
@@ -63,13 +63,13 @@ class FolderObserver
      */
     public static function shared(object $config)
     {
-        try{
-            cache()->tags([
-            'laravel-filemanager:folders',
-            'laravel-filemanager:disk-size'
-            ])->flush();
-        } catch (\Exception $ex) {
-
-        }
+//        try{
+//            cache()->tags([
+//            'laravel-filemanager:folders',
+//            'laravel-filemanager:disk-size'
+//            ])->flush();
+//        } catch (\Exception $ex) {
+//
+//        }
     }
 }

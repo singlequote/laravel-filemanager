@@ -11,13 +11,13 @@ class FileObserver
      */
     public static function create(object $config)
     {
-        try {
-            cache()->tags([
-                'laravel-filemanager:files',
-                'laravel-filemanager:disk-size'
-            ])->flush();
-        } catch (\Exception $ex) {
-        }
+//        try {
+//            cache()->tags([
+//                'laravel-filemanager:files',
+//                'laravel-filemanager:disk-size'
+//            ])->flush();
+//        } catch (\Exception $ex) {
+//        }
     }
 
     /**
@@ -27,13 +27,13 @@ class FileObserver
      */
     public static function update(object $config)
     {
-        try {
-            cache()->tags([
-                'laravel-filemanager:files',
-                'laravel-filemanager:disk-size'
-            ])->flush();
-        } catch (\Exception $ex) {
-        }
+//        try {
+//            cache()->tags([
+//                'laravel-filemanager:files',
+//                'laravel-filemanager:disk-size'
+//            ])->flush();
+//        } catch (\Exception $ex) {
+//        }
     }
 
     /**
@@ -43,13 +43,13 @@ class FileObserver
      */
     public static function delete(object $config)
     {
-        try {
-            cache()->tags([
-                'laravel-filemanager:files',
-                'laravel-filemanager:disk-size'
-            ])->flush();
-        } catch (\Exception $ex) {
-        }
+//        try {
+//            cache()->tags([
+//                'laravel-filemanager:files',
+//                'laravel-filemanager:disk-size'
+//            ])->flush();
+//        } catch (\Exception $ex) {
+//        }
     }
 
     /**
@@ -59,12 +59,12 @@ class FileObserver
      */
     public static function shared(object $config)
     {
-        try {
-            cache()->tags([
-                'laravel-filemanager:files',
-                'laravel-filemanager:disk-size'
-            ])->flush();
-        } catch (\Exception $ex) {
-        }
+//        try {
+//            cache()->tags([
+//                'laravel-filemanager:files',
+//                'laravel-filemanager:disk-size'
+//            ])->flush();
+//        } catch (\Exception $ex) {
+//        }
     }
 }
