@@ -117,11 +117,12 @@ class FilesController extends \SingleQuote\FileManager\FileManager
         $id = (string) Str::uuid();
         $extension = File::extension($path);
         $name = File::name($path);
-        $storage_path = Storage::disk($class->config('disk', 'local'))->path($class->config('path', 'media'));
+        $storage_path = $class->parseUrl(Storage::disk($class->config('disk', 'local'))->path($class->config('path', 'media')));
+        $givenPath = $class->parseUrl($path);
         
         $data = array_merge([
             'type' => "file",
-            'basepath' => $class->parseUrl(str_replace($name, $id, Str::after($path, $storage_path, $path))),
+            'basepath' => $class->parseUrl(str_replace($name, $id, Str::after($class->parseUrl($givenPath), $storage_path, $class->parseUrl($givenPath)))),
             'id' => "$id",
             'filename' => $name,
             'extension' => $extension,
