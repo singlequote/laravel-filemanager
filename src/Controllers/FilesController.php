@@ -29,21 +29,19 @@ class FilesController extends \SingleQuote\FileManager\FileManager
             abort(503);
         }
 
-//        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:files'])->remember("fi" . md5($this->driver), 3600, function () {
-            $items = File::files($this->getPath());
-            $files = [];
-            foreach ($items as $item) {
-                $content = File::get($item->getPathname(), false);
-                $object = json_decode($content);
-                if ($object && isset($object->type) && $object->type === 'file') {
-                    $files[] = $object;
-                } elseif ($object && Str::contains($object->basepath, '.')) {
-                    $files[] = $object;
-                }
+        $items = File::files($this->getPath());
+        $files = [];
+        foreach ($items as $item) {
+            $content = File::get($item->getPathname(), false);
+            $object = json_decode($content);
+            if ($object && isset($object->type) && $object->type === 'file') {
+                $files[] = $object;
+            } elseif ($object && Str::contains($object->basepath, '.')) {
+                $files[] = $object;
             }
+        }
 
-            return $files;
-//        });
+        return $files;
     }
 
     /**
@@ -150,17 +148,11 @@ class FilesController extends \SingleQuote\FileManager\FileManager
      */
     public function details(Request $request)
     {
-//        $config = cache()->tags(['laravel-filemanager', 'laravel-filemanager:files'])->remember("laravel-filemanager:file-$request->item", 3600, function () use ($request) {
-            $config = $this->parseConfig($this->makePath($request, $request->item));
-
-            if ($config) {
-                $config->content = view('laravel-filemanager::types.details')->with(compact('config'))->render();
-                $config->isOwner = \Auth::check() && $config->uploader && \Auth::id() === decrypt(optional($config->uploader)->id);
-                return $config;
-            }
-
-            return false;
-//        });
+        $config = $this->parseConfig($this->makePath($request, $request->item));
+        if ($config) {
+            $config->content = view('laravel-filemanager::types.details')->with(compact('config'))->render();
+            $config->isOwner = \Auth::check() && $config->uploader && \Auth::id() === decrypt(optional($config->uploader)->id);
+        }
 
         return response()->json($config);
     }
