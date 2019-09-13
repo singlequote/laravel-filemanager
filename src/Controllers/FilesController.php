@@ -29,21 +29,19 @@ class FilesController extends \SingleQuote\FileManager\FileManager
             abort(503);
         }
 
-//        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:files'])->remember("fi" . md5($this->driver), 3600, function () {
-            $items = File::files($this->getPath());
-            $files = [];
-            foreach ($items as $item) {
-                $content = File::get($item->getPathname(), false);
-                $object = json_decode($content);
-                if ($object && isset($object->type) && $object->type === 'file') {
-                    $files[] = $object;
-                } elseif ($object && Str::contains($object->basepath, '.')) {
-                    $files[] = $object;
-                }
+        $items = File::files($this->getPath());
+        $files = [];
+        foreach ($items as $item) {
+            $content = File::get($item->getPathname(), false);
+            $object = json_decode($content);
+            if ($object && isset($object->type) && $object->type === 'file') {
+                $files[] = $object;
+            } elseif ($object && Str::contains($object->basepath, '.')) {
+                $files[] = $object;
             }
+        }
 
-            return $files;
-//        });
+        return $files;
     }
 
     /**
@@ -119,18 +117,19 @@ class FilesController extends \SingleQuote\FileManager\FileManager
         $id = (string) Str::uuid();
         $extension = File::extension($path);
         $name = File::name($path);
-        $storage_path = Storage::disk($class->config('disk', 'local'))->path($class->config('path', 'media'));
+        $storage_path = $class->parseUrl(Storage::disk($class->config('disk', 'local'))->path($class->config('path', 'media')));
+        $givenPath = $class->parseUrl($path);
         
         $data = array_merge([
             'type' => "file",
-            'basepath' => $class->parseUrl(str_replace($name, $id, Str::after($path, $storage_path, $path))),
+            'basepath' => $class->parseUrl(str_replace($name, $id, Str::after($class->parseUrl($givenPath), $storage_path, $class->parseUrl($givenPath)))),
             'id' => "$id",
             'filename' => $name,
             'extension' => $extension,
             'size' => File::size($path),
             'mimetype' => File::mimeType($path),
             'image' => Str::startsWith(File::mimeType($path), "image"),
-            'uploader' => \Auth::check() ? ['id' => encrypt(\Auth::id()), 'name' => \Auth::user()->name] : null,
+            'uploader' => null,
             'created_at' => now()->format('Y-m-d H:i:s'),
             'updated_at' => now()->format('Y-m-d H:i:s')
         ], $config);
@@ -150,17 +149,12 @@ class FilesController extends \SingleQuote\FileManager\FileManager
      */
     public function details(Request $request)
     {
-//        $config = cache()->tags(['laravel-filemanager', 'laravel-filemanager:files'])->remember("laravel-filemanager:file-$request->item", 3600, function () use ($request) {
-            $config = $this->parseConfig($this->makePath($request, $request->item));
+        $config = $this->parseConfig($this->makePath($request, $request->item));
 
-            if ($config) {
-                $config->content = view('laravel-filemanager::types.details')->with(compact('config'))->render();
-                $config->isOwner = \Auth::check() && $config->uploader && \Auth::id() === decrypt(optional($config->uploader)->id);
-                return $config;
-            }
-
-            return false;
-//        });
+        if ($config) {
+            $config->content = view('laravel-filemanager::types.details')->with(compact('config'))->render();
+            $config->isOwner = \Auth::check() && $config->uploader && $config->uploader->id && \Auth::id() === decrypt(optional($config->uploader)->id);
+        }
 
         return response()->json($config);
     }

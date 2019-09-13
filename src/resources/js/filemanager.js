@@ -2,15 +2,16 @@ if (typeof $ === "undefined") {
     window.$ = window.jQuery = require('./jquery-3.4.1');
 }
 
-import contextMenu from './contextual';
 import Box from './box';
-import FileController from './Controllers/fileController';
-import FolderController from './Controllers/folderController';
-import ShareController from './Controllers/shareController';
 import Locker from './locker';
+import contextMenu from './contextual';
+import FileController from './Controllers/fileController';
+import ShareController from './Controllers/shareController';
+import FolderController from './Controllers/folderController';
+
 
 /**
- * FIlemanager class for laravel
+ * Filemanager class for laravel
  * 
  * @type {class}
  */
@@ -22,11 +23,19 @@ class FileManager
      */
     constructor()
     {
+        this.initialize();
+    }
+    
+    /**
+     * load
+     * 
+     * @returns {undefined}
+     */
+    initialize()
+    {
         this.currentPath;
-
-
-        this.pageFolders = 1;
         this.pageFiles = 1;
+        this.pageFolders = 1;
         this.currentFolderConfig = false;
 
         this.loadRequiredPlugins(() => {
@@ -34,11 +43,9 @@ class FileManager
             this.modal = this.domPackage.data('modal');
 
             this.loadConfig(() => {
-                
                 this.build();
             });
         });
-        
     }
 
     /**
@@ -57,8 +64,12 @@ class FileManager
             $('.sidebar-button').first().addClass('active');
         }
         if (typeof this.domPackage.data('start') === "undefined" || (this.domPackage.data('start') && this.domPackage.data('start') === true)) {
-            this.loadContent();
-        }
+            if(this.domPackage.data('start-content')){
+                this.load(this.domPackage.data('start-content'), this.domPackage.data('start-driver'));
+            }else{
+                this.loadContent();
+            }            
+        }        
         
         this.loadTriggers();
 
@@ -125,10 +136,6 @@ class FileManager
         //Reload the disk size
         $(document).on('click', '#diskSize', () => {
             this.reloadDiskSize();
-        });
-        
-        $(document).on('laravel-filemanager:start', () => {
-            $(document).trigger('laravel-filemanager:loaded');
         });
     }
 
@@ -310,7 +317,7 @@ class FileManager
         }
         if(typeof toastme === "undefined"){
             $('<link/>', {rel: 'stylesheet',type: 'text/css',href: 'https://unpkg.com/toastmejs@latest/dist/css/toastme.css'}).appendTo('head');
-            $.getScript('https://unpkg.com/toastmejs@latest/dist/js/toastme.min.js', () => {
+            $.getScript('https://unpkg.com/toastmejs@1.2.2/dist/js/toastme.min.js', () => {
                 window.toastme = toastme;
             });
         }
@@ -332,6 +339,7 @@ class FileManager
      */
     loadContent(setUrl = false, retries = 0)
     {
+        console.log(stackTrace());
         let url = setUrl ? setUrl : this.url(`load/content`);
         this.pageFolders = 1;
         this.pageFiles = 1;
@@ -368,9 +376,9 @@ class FileManager
      */
     load(path = "", driver = false)
     {
-            
         if (driver) {
-            $(`.drive[data-slug="${driver}"]`).trigger('click');
+            $('.drive.active').removeClass('active');
+            $(`.drive[data-slug="${driver}"]`).addClass('active');
         }
         
         this.setElements();

@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="{{ $css }}" media="screen">
-<div id="package-filemanager" data-load-header='{{ $loadHeader }}' data-load-content='{{ $loadContent }}' data-start="{{ $loadOnStartUp }}" data-modal="{{ $modal ? "true" : "false" }}" data-url="{{ route(config('laravel-filemanager.prefix')) }}">
-    @if($loadSidebar === true)
+<div id="package-filemanager" data-start-content='{{ $startContent }}' data-start-driver='{{ $startDriver }}' data-load-header='{{ $loadHeader }}' data-load-content='{{ $loadContent }}' data-start="{{ $loadOnStartUp }}" data-modal="{{ $modal ? "true" : "false" }}" data-url="{{ route(config('laravel-filemanager.prefix')) }}">
+    @if($loadSidebar === "true")
     <div id='package-sidebar'>
 
         <div class="sidebar-header">

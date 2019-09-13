@@ -33,7 +33,8 @@ class FileManagerServiceProvider extends ServiceProvider
         //php artisan vendor:publish --tag=laravel-filemanager-assets
         $this->publishes([
             __DIR__.'/resources/dist/filemanager.min.js' => public_path('vendor/laravel-filemanager/filemanager.min.js'),
-            __DIR__.'/resources/dist/filemanager.min.css'    => public_path('vendor/laravel-filemanager/filemanager.min.css'),
+            __DIR__.'/resources/dist/filemanager-plugin.min.js' => public_path('vendor/laravel-filemanager/filemanager-plugin.min.js'),
+            __DIR__.'/resources/dist/filemanager.min.css' => public_path('vendor/laravel-filemanager/filemanager.min.css'),
         ], 'laravel-filemanager-assets');
         
         //php artisan vendor:publish --tag=laravel-filemanager-locale

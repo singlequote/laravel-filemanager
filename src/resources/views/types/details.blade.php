@@ -66,7 +66,7 @@
 @if($type === 'file')
 <a class='button button-xs button-light' target='_blank' href='{{ route(config('laravel-filemanager.media.prefix'), $config->basepath) }}'><i data-feather='eye'></i></a>
 @endif
-@if(isset($config->uploader) && $config->uploader && decrypt($config->uploader->id) === optional(Auth::user())->id)
+@if(isset($config->uploader) && $config->uploader && $config->uploader->id && decrypt($config->uploader->id) === optional(Auth::user())->id)
 <button class='details-share button button-xs button-green {{ $type }}-button' data-id='{{ $config->id }}' onclick="$(this).trigger('{{ $type }}:share')"><i data-feather='share-2'></i></button>
 @endif
 @if(isset($config->shared) && isset($config->uploader) && $config->uploader && decrypt($config->uploader->id) === optional(Auth::user())->id)

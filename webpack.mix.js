@@ -15,4 +15,5 @@ let path = "vendor/singlequote/laravel-filemanager/src/resources/";
 
 mix.sass(`${path}sass/filemanager.scss`  , 'public/vendor/laravel-filemanager/filemanager.min.css');
 mix.js(`${path}js/filemanager.js`        , 'public/vendor/laravel-filemanager/filemanager.min.js');
+mix.js(`${path}js/plugin.js`             , 'public/vendor/laravel-filemanager/filemanager-plugin.min.js');
 
