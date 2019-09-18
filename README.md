@@ -64,7 +64,7 @@ If you discover any security related issues, take a look at the issue tracker.
 
 You're free to use this package, but if it makes it to your production environment we highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using.
 
-Our address is: ACF Bentveld, Ecu 2 8305 BA, Emmeloord, Netherlands.
+Our address is: Quotec, Traktieweg 8c 8304 BA, Emmeloord, Netherlands.
 
 ## Credits
 
