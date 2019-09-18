@@ -122,11 +122,13 @@ class FileManager
     loadTriggers()
     {
         //Change the driver
+        $(document).off('click', '#package-filemanager .sidebar-button.drive');
         $(document).on('click', '#package-filemanager .sidebar-button.drive', (e, reload = true) => {
             this.changeDrive(e, reload);
         });
 
         //Change the active folder and reload the content
+        $(document).off('click', '#package-content .breadcrumb li a');
         $(document).on('click', '#package-content .breadcrumb li a', (e) => {
             e.preventDefault();
             let element = $(e.currentTarget);
@@ -134,6 +136,7 @@ class FileManager
         });
 
         //Reload the disk size
+        $(document).off('click', '#diskSize');
         $(document).on('click', '#diskSize', () => {
             this.reloadDiskSize();
         });
@@ -339,7 +342,6 @@ class FileManager
      */
     loadContent(setUrl = false, retries = 0)
     {
-        console.log(stackTrace());
         let url = setUrl ? setUrl : this.url(`load/content`);
         this.pageFolders = 1;
         this.pageFiles = 1;

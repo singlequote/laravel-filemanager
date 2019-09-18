@@ -19,27 +19,33 @@ class FileController
      */
     loadTriggers()
     {
+        $(document).off('click', '.file');
         $(document).on('click', '.file', (e) => {
             this.show(e);
             this.trigger(e);
         });
         
+        $(document).off('file:details', '.file-button');
         $(document).on('file:details', '.file, .file-button', (e) => {
             this.show(e);
         });
         
+        $(document).off('file:open', '.file, .file-button');
         $(document).on('file:open', '.file, .file-button', (e) => {
             this.open(e);
         });
         
+        $(document).off('file:edit', '.file, .file-button');
         $(document).on('file:edit', '.file, .file-button', (e) => {
             this.edit(e);
         });
         
+        $(document).off('file:delete', '.file, .file-button');
         $(document).on('file:delete', '.file, .file-button', (e) => {
             this.delete(e);
         });
         
+        $(document).off('dblclick', '.file');
         $(document).on('dblclick', '.file', (e) => {
             if(!this.FileManager.modal){
                 return this.show(e);
@@ -47,19 +53,23 @@ class FileController
             return this.getConfig(e);
         });
         
+        $(document).off('file:upload');
         $(document).on('file:upload', (e) => {
             this.create(e);
         });
 
+        $(document).off('change', 'input[type="file"].filemanager-files');
         $(document).on('change', 'input[type="file"].filemanager-files', (e) => {
             this.store(e);
         });
-
+        
+        $(document).off('submit', '#editFile');
         $(document).on('submit', '#editFile', (e) => {
             e.preventDefault();
             this.update(e);
         });
         
+        $(document).off('click', '.load-more[data-type="files"]');
         $(document).on('click', '.load-more[data-type="files"]', (e) => {  
             $(e.currentTarget).remove();
             this.FileManager.pageFiles = this.FileManager.pageFiles + 1;

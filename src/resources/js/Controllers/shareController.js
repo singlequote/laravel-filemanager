@@ -20,23 +20,28 @@ class ShareController
      */
     loadTriggers()
     {
+        $(document).off('file:share', ".file, .file-button");
         $(document).on('file:share', ".file, .file-button", (e) => {
             this.shareFile(e);
         });
         
+        $(document).off('folder:share', ".folder, .folder-button");
         $(document).on('folder:share', ".folder, .folder-button", (e) => {
             this.shareFolder(e);
         });
         
+        $(document).off('submit', "#shareContent");
         $(document).on('submit', "#shareContent", (e) => {
             e.preventDefault();
             this.pushSharedContent(e);
         });
         
+        $(document).off('file:delete-shared', ".file, .file-button");
         $(document).on('file:delete-shared', ".file, .file-button", (e) => {
             this.deleteShared(e);
         });
         
+        $(document).off('folder:delete-shared', ".folder, .folder-button");
         $(document).on('folder:delete-shared', ".folder, .folder-button", (e) => {
             this.deleteShared(e);
         });

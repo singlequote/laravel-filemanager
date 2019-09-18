@@ -21,30 +21,36 @@ class FolderController
      */
     loadTriggers()
     {       
+        $(document).off('folder:details', '.folder, .folder-button');
         $(document).on('folder:details', '.folder, .folder-button', (e) => {
             this.show(e);
         });
         
+        $(document).off('folder:open', '.folder, .folder-button');
         $(document).on('folder:open', '.folder, .folder-button', (e) => {
             this.timer = false;
             this.open(e);
         });
         
+        $(document).off('folder:edit', '.folder, .folder-button');
         $(document).on('folder:edit', '.folder, .folder-button', (e) => {
             this.edit(e);
         });
         
+        $(document).off('folder:delete', '.folder, .folder-button');
         $(document).on('folder:delete', '.folder, .folder-button', (e) => {
             this.delete(e);
         });
         
+        $(document).off('dblclick', '.folder');
         $(document).on('dblclick', '.folder', (e) => {
             clearTimeout(this.timer);
             this.timer = false;
             this.open(e);
         });
         
-        $(document).on('click', '.folder', '.folder, .folder-button', (e) => {
+        $(document).off('click', '.folder, .folder-button');
+        $(document).on('click', '.folder, .folder-button', (e) => {
             if(this.timer){
                 return false;
             }
@@ -56,19 +62,23 @@ class FolderController
             },400);
         });
         
+        $(document).off('folder:create');
         $(document).on('folder:create', (e) => {
             this.create(e);
         });
-
+        
+        $(document).off('submit', '#addFolder');
         $(document).on('submit', '#addFolder', (e) => {
             this.store(e);
         });
         
+        $(document).off('submit', '#editFolder');
         $(document).on('submit', '#editFolder', (e) => {
             e.preventDefault();
             this.update(e);
         });
         
+        $(document).off('click', '.load-more[data-type="folders"]');
         $(document).on('click', '.load-more[data-type="folders"]', (e) => {  
             $(e.currentTarget).remove();
             this.FileManager.pageFolders = this.FileManager.pageFolders + 1;
