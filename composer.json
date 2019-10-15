@@ -20,7 +20,7 @@
     ],
     "require": {
         "php": "^7.0",
-        "laravel/framework": ">=5"
+        "laravel/framework": ">=5",
         "intervention/image": "^2.4"
     },
     "require-dev": {
