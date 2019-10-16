@@ -148,13 +148,13 @@ class MediaController extends Controller
      */
     private function returnType(string $content, string $path, string $filename, string $mimetype)
     {
-        if (starts_with($mimetype, 'text')) {
+        if (Str::startsWith($mimetype, 'text')) {
             return $this->textFile($content, $path, $filename, $mimetype);
-        } elseif (starts_with($mimetype, 'image')) {
+        } elseif (Str::startsWith($mimetype, 'image')) {
             return $this->response === 'json' ?
                 $this->imageAsJson($content, $path, $filename, $mimetype) :
                 $this->imageFile($content, $path, $filename);
-        } elseif (starts_with($mimetype, 'pdf')) {
+        } elseif (Str::startsWith($mimetype, 'pdf')) {
             return $this->pdfFile($content, $path, $filename, $mimetype);
         } else {
             if ($this->response === 'json') {
