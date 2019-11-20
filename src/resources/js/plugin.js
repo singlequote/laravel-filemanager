@@ -78,22 +78,6 @@ class Plugin
     }
     
     /**
-     * Set the pick method
-     * When a file is double clicked, the callback will be triggered
-     * 
-     * @param {object} callback
-     * @returns {Plugin}
-     */
-    pick(callback)
-    {
-        $(document).on('laravel-filemanager:select', (e, file) => {
-            callback(file, e);
-        });
-        
-        return this;
-    }
-    
-    /**
      * Load by path and driver
      * 
      * @param {type} path
