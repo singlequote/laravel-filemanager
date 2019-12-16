@@ -79,6 +79,32 @@ class FileSystem
         return Storage::disk($this->getConfig('disk', 'local'))
             ->delete("{$this->getConfig('path')}/{$extracted['basepath']}.fmc");
     }
+    
+    /**
+     * Copy a file and it's config file to a new destination 
+     * 
+     * @param type $path
+     * @param string $destination
+     * @return bool
+     */
+    public function copy($path, string $destination) : bool
+    {
+        $extractedDestination = $this->extractFromPath($destination);
+        
+        $config = is_object($path) ? $this->get($path->basepath) : $this->get($path);
+        $oldPath = $config->basepath;
+        $id = Str::uuid();
+        
+        $config->id = (string) $id;
+        $config->basepath = "{$extractedDestination["basepath"]}/$id.$config->extension";
+
+        Storage::disk($this->getConfig('disk', 'local'))
+            ->put("{$this->getConfig('path')}/{$extractedDestination['basepath']}/$id.fmc", json_encode($config));
+        
+            
+        return Storage::disk($this->getConfig('disk', 'local'))
+            ->copy("{$this->getConfig('path')}/$oldPath", "{$this->getConfig('path')}/{$extractedDestination['basepath']}/$id.$config->extension");
+    }
 
 
     /**
@@ -135,7 +161,7 @@ class FileSystem
     public function get(string $path) : object
     {
         $extracted = $this->extractFromPath($path);
-        
+
         $file = Storage::disk($this->getConfig('disk', 'local'))
             ->get("{$this->getConfig('path')}/{$extracted['basepath']}.fmc");
         
@@ -223,20 +249,23 @@ class FileSystem
      * Return extracted path parts
      * 
      * @param string $path
+     * @param string $findId
      * @return array
      */
     protected function extractFromPath(string $path, string $findId = null) : array
     {
-        $exploded = explode('/', $this->parseUrl($path));
+        $removeExtension  = explode('.', $path);
+        $exploded = explode('/', $this->parseUrl($removeExtension[0]));
         $name = end($exploded);
         $id = $findId ?? $name;
-        $newPath = "$this->driver/".rtrim(Str::after($path, $this->driver), $name);
-        
+        $newPath = "$this->driver/".rtrim(Str::after($removeExtension[0], $this->driver), $name);
+
         return [
             'id' => $id,
             'name' => $name,
-            'path' => $this->parseUrl(rtrim($path, $name)."/$id"),
-            'basepath' => $this->parseUrl("$newPath/$id")
+            'path' => $this->parseUrl(rtrim($removeExtension[0], $name)."/$id"),
+            'basepath' => $this->parseUrl("$newPath/$id"),
+            "isDir" => is_dir(Storage::disk($this->getConfig('disk', 'local'))->path("{$this->getConfig('path')}/{$this->parseUrl("$newPath/$id")}"))
         ];
     }
     
