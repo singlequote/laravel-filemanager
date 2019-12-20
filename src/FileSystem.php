@@ -106,7 +106,6 @@ class FileSystem
             ->copy("{$this->getConfig('path')}/$oldPath", "{$this->getConfig('path')}/{$extractedDestination['basepath']}/$id.$config->extension");
     }
 
-
     /**
      * Delete an directory and it's config file
      * 
@@ -127,7 +126,26 @@ class FileSystem
             return \File::deleteDirectory($basepath);
         }
         
-        return true;
+        return false;
+    }
+    
+    /**
+     * Delete all files and folders inside an directory
+     * 
+     * @param string $path
+     * @return bool
+     */
+    public function cleanDirectory(string $path) : bool
+    {
+        $extracted = $this->extractFromPath($path);
+        $basepath = Storage::disk($this->getConfig('disk', 'local'))
+            ->path("{$this->getConfig('path')}/{$extracted['basepath']}");
+        
+        if(is_dir($basepath)){
+            return \File::cleanDirectory($basepath);
+        }
+        
+        return false;
     }
     
     /**
