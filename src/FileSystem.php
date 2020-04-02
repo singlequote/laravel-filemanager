@@ -184,14 +184,16 @@ class FileSystem
     public function allFiles(string $path) : Collection
     {
         $extracted = $this->extractFromPath($path);
-        
+
         $links = Storage::disk($this->getConfig('disk', 'local'))
             ->allFiles("{$this->getConfig('path')}/{$extracted['basepath']}");
-            
+        
         $files = [];
             
         foreach($links as $link){
-            $files[] = $this->get(rtrim($link, ".fmc"));
+            if(Str::endsWith($link, '.fmc')){
+                $files[] = $this->get(rtrim($link, ".fmc"));
+            }
         }
         
         return collect($files);
