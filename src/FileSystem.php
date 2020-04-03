@@ -192,7 +192,11 @@ class FileSystem
             
         foreach($links as $link){
             if(Str::endsWith($link, '.fmc')){
-                $files[] = $this->get(rtrim($link, ".fmc"));
+				try{
+					$files[] = $this->get(rtrim($link, ".fmc"));
+				}catch(\Exception $e){
+					
+				}
             }
         }
         
