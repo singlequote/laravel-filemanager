@@ -401,7 +401,7 @@ class FileManager
         $result = array_filter($explode, function ($key) {
             return strlen($key) > 0;
         });
-        $route = implode($result, '/');
+        $route = implode('/', $result);
         return Str::startsWith($route, 'var') ? "/$route" : $route;
     }
 
