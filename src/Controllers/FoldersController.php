@@ -183,12 +183,12 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
         $id = !$generateUUID ? Str::uuid() : $generateUUID;
         $class = new FoldersController;
         $driversPath = $class->pathByDriverName($driver);
-        $folderPath = $class->parseUrl("$driversPath/" . implode($explodePath, '/') . "/$id");
+        $folderPath = $class->parseUrl("$driversPath/" . implode('/', $explodePath) . "/$id");
 
         $data = array_merge([
             'type' => "folder",
             'basepath' => $class->parseUrl($folderPath),
-            'path' => $class->parseUrl(implode($explodePath, '/') . "/$id", true),
+            'path' => $class->parseUrl(implode('/', $explodePath) . "/$id", true),
             'id' => "$id",
             'name' => $name,
             'created_at' => now()->format('Y-m-d H:i:s'),
