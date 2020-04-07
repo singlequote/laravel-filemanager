@@ -79,11 +79,11 @@ class MediaController extends Controller
         $this->file     = $file;
 
         if (!is_numeric($width)) {
-            $this->file = implode([$width, $file], '/');
+            $this->file = implode('/', [$width, $file]);
         }
 
         if (!is_numeric($height)) {
-            $this->file = implode([$height, $width, $file], '/');
+            $this->file = implode('/', [$height, $width, $file]);
         }
 
         $this->file = rtrim(ltrim($this->file, '/'), '/');
