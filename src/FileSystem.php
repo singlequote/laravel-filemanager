@@ -187,19 +187,16 @@ class FileSystem
 
         $links = Storage::disk($this->getConfig('disk', 'local'))
             ->allFiles("{$this->getConfig('path')}/{$extracted['basepath']}");
-        
         $files = [];
             
         foreach($links as $link){
             if(Str::endsWith($link, '.fmc')){
 				try{
-					$files[] = $this->get(rtrim($link, ".fmc"));
-				}catch(\Exception $e){
-					
-				}
+					$files[] = $this->get(Str::before($link, '.fmc'));
+				}catch(\Exception $e){}
             }
         }
-        
+
         return collect($files);
     }
     
@@ -241,6 +238,17 @@ class FileSystem
         }
         
         return $class;
+    }
+    
+    /**
+     * Set the driver
+     * 
+     * @param string $driver
+     * @return \SingleQuote\FileManager\FileSystem
+     */
+    public static function disk(string $driver) : FileSystem
+    {
+        return self::driver($driver);
     }
     
     /**
@@ -310,12 +318,12 @@ class FileSystem
         $name = end($exploded);
         $id = $findId ?? $name;
         $newPath = "$this->driver/".rtrim(Str::after($removeExtension[0], $this->driver), $name);
-
+        
         return [
             'id' => $id,
             'name' => $name,
             'path' => $this->parseUrl(rtrim($removeExtension[0], $name)."/$id"),
-            'basepath' => $this->parseUrl("$newPath/$id"),
+            'basepath' => $this->parseUrl(str_replace("$name/$name", "$name", "$newPath/$id")),
             "isDir" => is_dir(Storage::disk($this->getConfig('disk', 'local'))->path("{$this->getConfig('path')}/{$this->parseUrl("$newPath/$id")}"))
         ];
     }
