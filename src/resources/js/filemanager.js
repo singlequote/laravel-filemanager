@@ -3,7 +3,6 @@ if (typeof $ === "undefined") {
 }
 
 import Box from './box';
-import Locker from './locker';
 import contextMenu from './contextual';
 import FileController from './Controllers/fileController';
 import ShareController from './Controllers/shareController';
@@ -73,7 +72,6 @@ class FileManager
         
         this.loadTriggers();
 
-        this.locker = new Locker(this);
         this.box = new Box(this);
         this.file = new FileController(this);
         this.share = new ShareController(this);
@@ -223,7 +221,7 @@ class FileManager
      */
     elementMenu()
     {        
-        let menu = $.contextMenu({
+        $.contextMenu({
             targets: '#package-content .file, #package-content .folder',
             menu: [{
                 name: this.trans('open'),
@@ -255,19 +253,6 @@ class FileManager
                 }
             }]
         });
-        
-        this.locker.cannot('open', this.currentFolderConfig, () => {
-            menu.element.find('[data-id="0"]').remove();
-        });
-        this.locker.cannot('edit', this.currentFolderConfig, () => {
-            menu.element.find('[data-id="1"]').remove();
-        });
-        this.locker.cannot('share', this.currentFolderConfig, () => {
-            menu.element.find('[data-id="2"]').remove();
-        });
-        this.locker.cannot('delete', this.currentFolderConfig, () => {
-            menu.element.find('[data-id="3"]').remove();
-        });
     }
     
     /**
@@ -297,11 +282,6 @@ class FileManager
                     }
                 }
             ]
-        });
-        
-        this.locker.cannot('upload', this.currentFolderConfig, () => {
-            menu.element.find('[data-id="0"]').remove();
-            menu.element.find('[data-id="1"]').remove();
         });
     }
 
@@ -404,6 +384,7 @@ class FileManager
             this.domPackage.find('.folders').append(response);
             $('.folders .breeding-rhombus-spinner').remove();
             this.checkSizes();
+            feather.replace();
             if (callback) {
                 return callback();
             }
@@ -426,6 +407,7 @@ class FileManager
             this.domPackage.find('.files').append(response);
             $('.files .breeding-rhombus-spinner').remove();
             this.checkSizes();
+            feather.replace();
             if (callback) {
                 return callback();
             }
