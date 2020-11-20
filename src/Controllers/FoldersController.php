@@ -29,21 +29,19 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
             abort(503);
         }
 
-//        return cache()->tags(['laravel-filemanager', 'laravel-filemanager:folders'])->remember("fo" . md5($this->driver), 3600, function () {
-            $items = File::files($this->getPath());
-            $folders = [];
-            foreach ($items as $item) {
-                $content = File::get($item->getPathname(), false);
-                $object = json_decode($content);
-                if ($object && isset($object->type) && $object->type === 'folder') {
-                    $folders[] = $object;
-                } elseif ($object && !Str::contains($object->basepath, '.')) {
-                    $folders[] = $object;
-                }
+        $items = File::files($this->getPath());
+        $folders = [];
+        foreach ($items as $item) {
+            $content = File::get($item->getPathname(), false);
+            $object = json_decode($content);
+            if ($object && isset($object->type) && $object->type === 'folder') {
+                $folders[] = $object;
+            } elseif ($object && !Str::contains($object->basepath, '.')) {
+                $folders[] = $object;
             }
+        }
 
-            return $folders;
-//        });
+        return $folders;
     }
 
     /**
