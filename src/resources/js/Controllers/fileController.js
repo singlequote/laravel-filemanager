@@ -8,7 +8,6 @@ class FileController
     constructor(FileManager)
     {
         this.FileManager = FileManager;
-        this.locker = FileManager.locker;
         this.box = FileManager.box;
         this.loadTriggers();
     }
@@ -116,9 +115,8 @@ class FileController
     open(e, el = false)
     {
         let element = e ? $(e.currentTarget) : el;
-        this.locker.can('open', element.data('id'), (config) => {
-            window.open(`${this.FileManager.config.mediaUrl}/${config.basepath}`, '_blank');
-        });
+        
+        window.open(`${this.FileManager.config.mediaUrl}/${config.basepath}`, '_blank');
     }
 
     /**
@@ -135,12 +133,12 @@ class FileController
 
             this.box.content = response.content
             
-            this.locker.cannot('edit', response, () => {
-                $(`.details-edit[data-id="${response.id}"]`).remove();
-            });
-            this.locker.cannot('delete', response, () => {
-                $(`.details-delete[data-id="${response.id}"]`).remove();
-            });
+//            this.locker.cannot('edit', response, () => {
+//                $(`.details-edit[data-id="${response.id}"]`).remove();
+//            });
+//            this.locker.cannot('delete', response, () => {
+//                $(`.details-delete[data-id="${response.id}"]`).remove();
+//            });
             
             this.box.show();
             feather.replace();
@@ -208,22 +206,17 @@ class FileController
     edit(e, el = false)
     {
         let element = e ? $(e.currentTarget) : el;
-
-        this.locker.can('edit', element.data('id'), (response) => {
-            
-            this.box.title = response.filename;
-            this.box.content = `
-                <form id="editFile">
-                    <input type="hidden" name="item" value="${response.id}">
-                    <label>${this.FileManager.trans('filename')}</label>
-                    <input type="text" name="rename" data-id="${element.data('id')}" value="${response.filename}" /><br><br>
-                    <!--<button class="cancel button button-default button-small" type="button">${this.FileManager.trans('cancel')}</button>-->
-                    <button class="button button-green button-small">${this.FileManager.trans('rename')}</button>
-                </form>
-            `;
-            this.box.show();
-            
-        });
+        this.box.title = response.filename;
+        this.box.content = `
+            <form id="editFile">
+                <input type="hidden" name="item" value="${response.id}">
+                <label>${this.FileManager.trans('filename')}</label>
+                <input type="text" name="rename" data-id="${element.data('id')}" value="${response.filename}" /><br><br>
+                <!--<button class="cancel button button-default button-small" type="button">${this.FileManager.trans('cancel')}</button>-->
+                <button class="button button-green button-small">${this.FileManager.trans('rename')}</button>
+            </form>
+        `;
+        this.box.show();
     }
     
     /**
