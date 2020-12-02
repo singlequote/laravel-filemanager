@@ -194,7 +194,7 @@ class FileController
             setTimeout(() => {
                 this.upload(id, element, index, file);
             }, 500);
-''        });
+        });
     }
     
     /**
@@ -207,9 +207,10 @@ class FileController
     edit(e, el = false)
     {
         let element = e ? $(e.currentTarget) : el;
-        this.box.title = response.filename;
         
         $.post(this.FileManager.url('details/file'), {_token: this.FileManager.config._token, item: element.data('id')}, (response) => {
+            this.box.title = response.filename;
+            
             this.box.content = `
                 <form id="editFile">
                     <input type="hidden" name="item" value="${response.id}">
