@@ -57,7 +57,7 @@ class ShareController
     {
         this.box.title = this.FileManager.trans('share file');
         
-//        this.locker.can('share', $(e.currentTarget).data('id'), (response) => {
+        $.post(this.FileManager.url('details/file'), {_token: this.FileManager.config._token, item: element.data('id')}, (config) => {
             this.box.content = `
                 <form id="shareContent">
                     <input type="hidden" name="item" value="${response.id}">
@@ -87,7 +87,7 @@ class ShareController
                     <span class="selectOnClick">${this.FileManager.config.mediaUrl}/${response.basepath}</span>-->
                 </form>
             `;
-//        });
+        });
     }
     
     /**
