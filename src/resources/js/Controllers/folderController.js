@@ -204,7 +204,7 @@ class FolderController
     {
         let element = e ? $(e.currentTarget) : el;
         
-//        this.locker.can('edit', element.data('id'), (response) => {
+        $.post(this.FileManager.url('details/file'), {_token: this.FileManager.config._token, item: element.data('id')}, (response) => {
             this.box.title = response.name;
             this.box.content = `
                 <form id="editFolder">
@@ -215,7 +215,7 @@ class FolderController
                 </form>
             `;
             this.box.show();
-//        });
+        });
     }
     
     /**
@@ -252,14 +252,12 @@ class FolderController
             let element = $(active);
             let url = element.hasClass('folder') ? this.FileManager.url('delete/folder') : this.FileManager.url('delete/file');
             
-            this.locker.can('delete', element.data('id'), () => {
-                $.post(url, {_method: "delete", _token: this.FileManager.config._token, item: element.data('id')}, () => {
-                    element.hide('slow', () => {
-                        element.remove();
-                        if(!$(`#package-content .folder`).length){
-                            this.FileManager.loadContent();
-                        }
-                    });
+            $.post(url, {_method: "delete", _token: this.FileManager.config._token, item: element.data('id')}, () => {
+                element.hide('slow', () => {
+                    element.remove();
+                    if(!$(`#package-content .folder`).length){
+                        this.FileManager.loadContent();
+                    }
                 });
             });
         });
