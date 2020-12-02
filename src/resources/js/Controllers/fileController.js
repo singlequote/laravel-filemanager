@@ -115,8 +115,9 @@ class FileController
     open(e, el = false)
     {
         let element = e ? $(e.currentTarget) : el;
-        
-        window.open(`${this.FileManager.config.mediaUrl}/${config.basepath}`, '_blank');
+        $.post(this.FileManager.url('details/file'), {_token: this.FileManager.config._token, item: element.data('id')}, (config) => {
+            window.open(`${this.FileManager.config.mediaUrl}/${config.basepath}`, '_blank');
+        });
     }
 
     /**
@@ -207,16 +208,20 @@ class FileController
     {
         let element = e ? $(e.currentTarget) : el;
         this.box.title = response.filename;
-        this.box.content = `
-            <form id="editFile">
-                <input type="hidden" name="item" value="${response.id}">
-                <label>${this.FileManager.trans('filename')}</label>
-                <input type="text" name="rename" data-id="${element.data('id')}" value="${response.filename}" /><br><br>
-                <!--<button class="cancel button button-default button-small" type="button">${this.FileManager.trans('cancel')}</button>-->
-                <button class="button button-green button-small">${this.FileManager.trans('rename')}</button>
-            </form>
-        `;
-        this.box.show();
+        
+        $.post(this.FileManager.url('details/file'), {_token: this.FileManager.config._token, item: element.data('id')}, (response) => {
+            this.box.content = `
+                <form id="editFile">
+                    <input type="hidden" name="item" value="${response.id}">
+                    <label>${this.FileManager.trans('filename')}</label>
+                    <input type="text" name="rename" data-id="${element.data('id')}" value="${response.filename}" /><br><br>
+                    <!--<button class="cancel button button-default button-small" type="button">${this.FileManager.trans('cancel')}</button>-->
+                    <button class="button button-green button-small">${this.FileManager.trans('rename')}</button>
+                </form>
+            `;
+
+            this.box.show();
+        });
     }
     
     /**
