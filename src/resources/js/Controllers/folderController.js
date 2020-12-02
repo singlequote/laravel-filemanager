@@ -9,7 +9,7 @@ class FolderController
     {
         this.FileManager = FileManager;
         this.box = FileManager.box;
-        this.locker = FileManager.locker;
+//        this.locker = FileManager.locker;
         this.loadTriggers();
         
         this.timer;
@@ -137,13 +137,13 @@ class FolderController
             this.FileManager.box.title = response.name;
             this.FileManager.box.content = response.content
             
-            this.locker.cannot('edit', response, () => {
-                $(`.details-edit[data-id="${response.id}"]`).remove();
-            });
+//            this.locker.cannot('edit', response, () => {
+//                $(`.details-edit[data-id="${response.id}"]`).remove();
+//            });
             
-            this.locker.cannot('delete', response, () => {
-                $(`.details-delete[data-id="${response.id}"]`).remove();
-            });
+//            this.locker.cannot('delete', response, () => {
+//                $(`.details-delete[data-id="${response.id}"]`).remove();
+//            });
             
             this.FileManager.box.show();
             feather.replace();
@@ -158,7 +158,7 @@ class FolderController
      */
     create(e)
     {
-        this.locker.can('upload', false, () => {
+//        this.locker.can('upload', false, () => {
             this.box.title = this.FileManager.trans('new folder');
             this.box.content = `
                 <form id="addFolder">
@@ -168,7 +168,7 @@ class FolderController
                 </form>
             `;
             this.box.show();
-        });
+//        });
     }
 
     /**
@@ -204,7 +204,7 @@ class FolderController
     {
         let element = e ? $(e.currentTarget) : el;
         
-        this.locker.can('edit', element.data('id'), (response) => {
+//        this.locker.can('edit', element.data('id'), (response) => {
             this.box.title = response.name;
             this.box.content = `
                 <form id="editFolder">
@@ -215,7 +215,7 @@ class FolderController
                 </form>
             `;
             this.box.show();
-        });
+//        });
     }
     
     /**
