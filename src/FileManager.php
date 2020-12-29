@@ -402,7 +402,7 @@ class FileManager
             return strlen($key) > 0;
         });
         $route = implode('/', $result);
-        return Str::startsWith($route, 'var') ? "/$route" : $route;
+        return Str::startsWith($route, 'var') || Str::startsWith($route, 'home') ? "/$route" : $route;
     }
 
     /**
