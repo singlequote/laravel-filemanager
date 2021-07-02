@@ -135,7 +135,7 @@ class FilesController extends \SingleQuote\FileManager\FileManager
         ], $config);
         
         File::move($path, Str::before($path, $name)."$id.$extension");
-        File::put(Str::before(str_replace($name, $id, $path), '.').".fmc", json_encode($data));
+        File::put(Str::before(str_replace($name, $id, $path), "$id.")."$id.fmc", json_encode($data));
 
         FileObserver::create((object) $data);
         return $data['basepath'];
