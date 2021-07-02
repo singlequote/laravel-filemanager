@@ -94,7 +94,6 @@ class FilesController extends \SingleQuote\FileManager\FileManager
             'size' => $file->getSize(),
             'mimetype' => $file->getMimeType(),
             'image' => Str::startsWith($file->getMimeType(), "image"),
-            'uploader' => $request->user() ? ['id' => encrypt($request->user()->id), 'name' => $request->user()->name] : null,
             'created_at' => now()->format('Y-m-d H:i:s'),
             'updated_at' => now()->format('Y-m-d H:i:s')
         ];
@@ -153,7 +152,7 @@ class FilesController extends \SingleQuote\FileManager\FileManager
 
         if ($config) {
             $config->content = view('laravel-filemanager::types.details')->with(compact('config'))->render();
-            $config->isOwner = \Auth::check() && $config->uploader && $config->uploader->id && \Auth::id() === decrypt(optional($config->uploader)->id);
+            $config->isOwner = true;
         }
 
         return response()->json($config);
