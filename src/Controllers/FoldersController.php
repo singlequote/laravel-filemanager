@@ -114,7 +114,6 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
             'path' => $this->parseUrl("$request->path/$id", true),
             'id' => "$id",
             'name' => $request->name,
-            'uploader' => $request->user() ? ['id' => encrypt($request->user()->id), 'name' => $request->user()->name] : null,
             'created_at' => now()->format('Y-m-d H:i:s'),
             'updated_at' => now()->format('Y-m-d H:i:s')
         ];
@@ -211,7 +210,7 @@ class FoldersController extends \SingleQuote\FileManager\FileManager
 
         if ($config) {
             $config->type = "folder";
-            $config->isOwner = \Auth::check() && isset($config->uploader) && \Auth::id() === decrypt(optional($config->uploader)->id);
+            $config->isOwner = true;
             $config->content = view('laravel-filemanager::types.details')->with(compact('config'))->render();
             return response()->json($config);
         }
