@@ -216,7 +216,7 @@ class FileSystem
      * @param string $path
      * @return object
      */
-    public function get(string $path): object
+    public function get(string $path): ?object
     {
         $extracted = $this->extractFromPath($path);
 
